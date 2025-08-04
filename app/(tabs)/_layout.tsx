@@ -16,6 +16,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
       }}>
+      {/* Left side tabs */}
       <Tabs.Screen
         name="dashboard"
         options={{
@@ -24,19 +25,6 @@ export default function TabLayout() {
             <IconSymbol 
               size={24} 
               name={focused ? "house.fill" : "house"} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="practice"
-        options={{
-          title: 'Practice',
-          tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={24} 
-              name={focused ? "play.circle.fill" : "play.circle"} 
               color={color} 
             />
           ),
@@ -55,6 +43,23 @@ export default function TabLayout() {
           ),
         }}
       />
+      
+      {/* Center practice button - will be handled specially in CustomTabBar */}
+      <Tabs.Screen
+        name="practice"
+        options={{
+          title: 'Practice',
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol 
+              size={28} 
+              name="video.fill"
+              color={color} 
+            />
+          ),
+        }}
+      />
+      
+      {/* Right side tabs */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -68,6 +73,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      
       {/* Hide the old screens */}
       <Tabs.Screen
         name="index"

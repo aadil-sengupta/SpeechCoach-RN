@@ -24,6 +24,13 @@ export default function AuthNavigator() {
         // Authenticated user screens
         <>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen 
+            name="camera-practice" 
+            options={{ 
+              presentation: 'fullScreenModal',
+              animation: 'slide_from_bottom',
+            }} 
+          />
           <Stack.Screen name="+not-found" />
         </>
       ) : (
