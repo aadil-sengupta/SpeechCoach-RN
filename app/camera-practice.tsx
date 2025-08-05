@@ -3,7 +3,9 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { BlurView } from 'expo-blur';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import * as FileSystem from 'expo-file-system';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -132,7 +134,6 @@ export default function CameraPracticeScreen() {
       // Stop recording
       setIsRecording(false);
       cameraRef.current.stopRecording();
-      Alert.alert('Recording Stopped', 'Your practice session has been saved!');
     } else {
       // Start recording
       setIsRecording(true);
@@ -142,11 +143,95 @@ export default function CameraPracticeScreen() {
         });
         if (video) {
           console.log('Video recorded:', video.uri);
+          await saveVideo(video.uri);
         }
       } catch (error) {
         console.error('Recording failed:', error);
         setIsRecording(false);
       }
+    }
+  };
+
+  const saveVideo = async (videoUri: string) => {
+    try {
+      // Request media library permissions
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      
+      if (status === 'granted') {
+        // Create a permanent file name
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileName = `SpeechCoach_Practice_${timestamp}.mp4`;
+        const documentDirectory = FileSystem.documentDirectory;
+        const localUri = `${documentDirectory}${fileName}`;
+        
+        // Copy the video to app's document directory
+        await FileSystem.copyAsync({
+          from: videoUri,
+          to: localUri,
+        });
+        
+        // Save to device's photo library
+        const asset = await MediaLibrary.createAssetAsync(localUri);
+        await MediaLibrary.createAlbumAsync('SpeechCoach', asset, false);
+        
+        Alert.alert(
+          'Recording Saved!', 
+          'Your practice session has been saved to your photo library and app storage.',
+          [{ text: 'OK', style: 'default' }]
+        );
+        
+        console.log('Video saved to:', localUri);
+        console.log('Video saved to photo library');
+      } else {
+        // Save only to app directory if no media library permission
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileName = `SpeechCoach_Practice_${timestamp}.mp4`;
+        const documentDirectory = FileSystem.documentDirectory;
+        const localUri = `${documentDirectory}${fileName}`;
+        
+        await FileSystem.copyAsync({
+          from: videoUri,
+          to: localUri,
+        });
+        
+        Alert.alert(
+          'Recording Saved!', 
+          'Your practice session has been saved to app storage.',
+          [{ text: 'OK', style: 'default' }]
+        );
+        
+        console.log('Video saved to app storage:', localUri);
+      }
+    } catch (error) {
+      console.error('Error saving video:', error);
+      Alert.alert('Save Error', 'Failed to save your recording. Please try again.');
+    }
+  };
+
+  const showSavedVideos = async () => {
+    try {
+      const documentDirectory = FileSystem.documentDirectory;
+      if (!documentDirectory) {
+        Alert.alert('Error', 'Unable to access app storage directory.');
+        return;
+      }
+      
+      const files = await FileSystem.readDirectoryAsync(documentDirectory);
+      const videoFiles = files.filter(file => file.includes('SpeechCoach_Practice_') && file.endsWith('.mp4'));
+      
+      if (videoFiles.length === 0) {
+        Alert.alert('No Videos', 'No practice videos found in app storage.');
+      } else {
+        const videoList = videoFiles.map((file, index) => `${index + 1}. ${file}`).join('\n');
+        Alert.alert(
+          'Saved Videos',
+          `Found ${videoFiles.length} practice video(s):\n\n${videoList}\n\nVideos are stored in:\n${documentDirectory}`,
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error reading saved videos:', error);
+      Alert.alert('Error', 'Failed to read saved videos.');
     }
   };
 
@@ -185,9 +270,7 @@ export default function CameraPracticeScreen() {
         mode="video"
       >
         {/* Background blur overlay */}
-        <BlurView 
-          intensity={20} 
-          tint="dark" 
+        <View 
           style={styles.backgroundBlur}
         />
 
@@ -237,7 +320,7 @@ export default function CameraPracticeScreen() {
               {/* Gallery/Library button */}
               <TouchableOpacity
                 style={styles.sideButton}
-                onPress={() => Alert.alert('Gallery', 'View previous recordings')}
+                onPress={showSavedVideos}
               >
                 <BlurView intensity={90} tint="dark" style={styles.sideButtonBlur}>
                   <IconSymbol name="photo.on.rectangle" size={24} color="white" />
