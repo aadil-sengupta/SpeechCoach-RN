@@ -5,9 +5,10 @@ import { BlurView } from 'expo-blur';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Alert,
+    Animated,
     Dimensions,
     SafeAreaView,
     StatusBar,
@@ -19,14 +20,72 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
+// Array of different intro texts to cycle through
+const introTexts = [
+  "Introduce yourself and talk about your goals for the next 30 seconds",
+  "Tell us about your biggest accomplishment and what you learned from it",
+  "Describe a challenge you faced recently and how you overcame it",
+  "Share your passion and what drives you every day",
+  "Explain a skill you've been developing and why it matters to you",
+  "Talk about a moment that changed your perspective on life",
+  "Describe your ideal work environment and what motivates you",
+  "Share a piece of advice that has shaped who you are today"
+];
+
 export default function CameraPracticeScreen() {
   const [facing, setFacing] = useState<CameraType>('front');
   const [isRecording, setIsRecording] = useState(false);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  
+  // Animation values for fade transition
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const textChangeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Function to animate text change
+  const changeText = () => {
+    // Fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 800, // 800ms fade out
+      useNativeDriver: true,
+    }).start(() => {
+      // Change text at the middle of animation
+      setCurrentTextIndex((prev) => (prev + 1) % introTexts.length);
+      
+      // Fade in
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800, // 800ms fade in
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  // Set up text cycling when component mounts
+  useEffect(() => {
+    // Only start cycling if not recording
+    if (!isRecording) {
+      textChangeIntervalRef.current = setInterval(changeText, 5000); // Change every 5 seconds
+    } else {
+      // Clear interval when recording starts
+      if (textChangeIntervalRef.current) {
+        clearInterval(textChangeIntervalRef.current);
+        textChangeIntervalRef.current = null;
+      }
+    }
+
+    // Cleanup interval on unmount or when recording state changes
+    return () => {
+      if (textChangeIntervalRef.current) {
+        clearInterval(textChangeIntervalRef.current);
+      }
+    };
+  }, [isRecording]);
 
   if (!permission) {
     return <View />;
@@ -125,6 +184,13 @@ export default function CameraPracticeScreen() {
         facing={facing}
         mode="video"
       >
+        {/* Background blur overlay */}
+        <BlurView 
+          intensity={20} 
+          tint="dark" 
+          style={styles.backgroundBlur}
+        />
+
         {/* Gradient Overlays for better visual hierarchy */}
         <LinearGradient
           colors={['rgba(0,0,0,0.6)', 'transparent']}
@@ -137,56 +203,32 @@ export default function CameraPracticeScreen() {
           pointerEvents="none"
         />
 
-        {/* Top Controls */}
-        <SafeAreaView style={styles.topControls}>
 
-          
+        <SafeAreaView style={styles.topControls}>
           <View style={styles.topCenter}>
-            <BlurView intensity={80} tint="dark" style={styles.titleBlur}>
-              <Text style={styles.practiceTitle}>Practice Session</Text>
-            </BlurView>
+            <BlurView intensity={85} tint="dark" style={styles.introTextBlur}>
+              <TouchableOpacity 
+                onPress={changeText} 
+                style={styles.introTextContainer}
+                activeOpacity={0.8}
+              >
+                <Animated.View style={{ opacity: fadeAnim }}>
+                  <Text style={styles.introText}>
+                    {introTexts[currentTextIndex]}
+                  </Text>
+                </Animated.View>
+              </TouchableOpacity>
+            
             {isRecording && (
-              <BlurView intensity={90} tint="dark" style={styles.recordingIndicatorBlur}>
                 <View style={styles.recordingIndicator}>
                   <View style={styles.recordingDot} />
                   <Text style={styles.recordingText}>Recording</Text>
                 </View>
-              </BlurView>
             )}
+
+            </BlurView>
           </View>
-                      <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleClosePress}
-          >
-            <BlurView intensity={90} tint="dark" style={styles.blurButton}>
-              <IconSymbol name="xmark" size={24} color="white" />
-            </BlurView>
-          </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            style={styles.flipButton}
-            onPress={toggleCameraFacing}
-          >
-            <BlurView intensity={90} tint="dark" style={styles.blurButton}>
-              <IconSymbol name="arrow.triangle.2.circlepath.camera" size={24} color="white" />
-            </BlurView>
-          </TouchableOpacity> */}
         </SafeAreaView>
-
-        {/* Practice Prompt Overlay */}
-        <View style={styles.promptOverlay}>
-          <BlurView intensity={85} tint="dark" style={styles.promptContainer}>
-            <LinearGradient
-              colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.3)']}
-              style={styles.promptGradient}
-            >
-              <Text style={styles.promptTitle}>Today's Practice</Text>
-              <Text style={styles.promptText}>
-                "Introduce yourself and talk about your goals for the next 30 seconds"
-              </Text>
-            </LinearGradient>
-          </BlurView>
-        </View>
 
         {/* Bottom Controls */}
         <View style={styles.bottomControls}>
@@ -222,7 +264,8 @@ export default function CameraPracticeScreen() {
                     {isRecording ? (
                       <View style={styles.stopIcon} />
                     ) : (
-                      <IconSymbol name="mic.fill" size={32} color="white" />
+                    //   <IconSymbol name="mic.fill" size={32} color="white" />
+                        <></>
                     )}
                   </View>
                 </BlurView>
@@ -252,6 +295,13 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+  },
+  backgroundBlur: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   topGradient: {
     position: 'absolute',
@@ -306,18 +356,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   topControls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 50,
-    paddingTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   closeButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
     overflow: 'hidden',
-    marginRight: 15,
   },
   blurButton: {
     width: 44,
@@ -334,6 +382,31 @@ const styles = StyleSheet.create({
   topCenter: {
     alignItems: 'center',
     flex: 1,
+  },
+  introTextBlur: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+    height: 140, // Back to original height
+    transform: [{ translateY: -75 }],
+    paddingTop: 76
+  },
+  introTextContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  introText: {
+    color: '#b9b9b9ff',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    width: width - 40,
   },
   titleBlur: {
     paddingHorizontal: 16,
@@ -380,12 +453,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  flipButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    overflow: 'hidden',
-  },
+
   promptOverlay: {
     position: 'absolute',
     top: '35%',
@@ -426,7 +494,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 50,
+    paddingBottom: 0,
   },
   bottomControlsBlur: {
     paddingTop: 20,
