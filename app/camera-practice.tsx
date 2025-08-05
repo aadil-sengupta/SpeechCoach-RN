@@ -1,8 +1,16 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import {
+    RecordingMetadata,
+    clearAllRecordingMetadata,
+    exportRecordingMetadata,
+    generateRecordingId,
+    getRecordingMetadata,
+    saveRecordingMetadata
+} from '@/utils/recordingUtils';
 import { BlurView } from 'expo-blur';
-import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraType, CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as MediaLibrary from 'expo-media-library';
@@ -39,6 +47,8 @@ export default function CameraPracticeScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
+  const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+  const [mediaLibraryPermission, setMediaLibraryPermission] = useState<'granted' | 'denied' | 'undetermined'>('undetermined');
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -89,26 +99,97 @@ export default function CameraPracticeScreen() {
     };
   }, [isRecording]);
 
+  // Check media library permissions on mount
+  useEffect(() => {
+    const checkMediaLibraryPermission = async () => {
+      try {
+        const { status } = await MediaLibrary.getPermissionsAsync();
+        setMediaLibraryPermission(status);
+      } catch (error) {
+        console.error('Error checking media library permission:', error);
+        setMediaLibraryPermission('denied');
+      }
+    };
+
+    checkMediaLibraryPermission();
+  }, []);
+
+  const requestAllPermissions = async () => {
+    try {
+      // Request camera permission
+      const cameraResult = await requestPermission();
+      
+      // Request microphone permission
+      const microphoneResult = await requestMicrophonePermission();
+      
+      // Request media library permission
+      const mediaLibraryResult = await MediaLibrary.requestPermissionsAsync();
+      setMediaLibraryPermission(mediaLibraryResult.status);
+      
+      return cameraResult && microphoneResult && mediaLibraryResult.status === 'granted';
+    } catch (error) {
+      console.error('Error requesting permissions:', error);
+      return false;
+    }
+  };
+
   if (!permission) {
     return <View />;
   }
 
-  if (!permission.granted) {
+  if (!permission.granted || !microphonePermission?.granted || mediaLibraryPermission !== 'granted') {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.permissionContainer}>
           <IconSymbol name="camera.fill" size={64} color={colors.text} />
           <Text style={[styles.permissionTitle, { color: colors.text }]}>
-            Camera Permission Required
+            Permissions Required
           </Text>
           <Text style={[styles.permissionText, { color: colors.text }]}>
-            We need access to your camera to help you practice speaking.
+            We need access to your camera, microphone, and photo library to help you practice speaking and save your recordings.
           </Text>
+          
+          {/* Permission status indicators */}
+          <View style={styles.permissionStatus}>
+            <View style={styles.permissionItem}>
+              <IconSymbol 
+                name={permission.granted ? "checkmark.circle.fill" : "camera.fill"} 
+                size={20} 
+                color={permission.granted ? '#4CAF50' : colors.text} 
+              />
+              <Text style={[styles.permissionItemText, { color: colors.text }]}>
+                Camera: {permission.granted ? 'Granted' : 'Required'}
+              </Text>
+            </View>
+            
+            <View style={styles.permissionItem}>
+              <IconSymbol 
+                name={microphonePermission?.granted ? "checkmark.circle.fill" : "mic.fill"} 
+                size={20} 
+                color={microphonePermission?.granted ? '#4CAF50' : colors.text} 
+              />
+              <Text style={[styles.permissionItemText, { color: colors.text }]}>
+                Microphone: {microphonePermission?.granted ? 'Granted' : 'Required'}
+              </Text>
+            </View>
+            
+            <View style={styles.permissionItem}>
+              <IconSymbol 
+                name={mediaLibraryPermission === 'granted' ? "checkmark.circle.fill" : "photo.on.rectangle"} 
+                size={20} 
+                color={mediaLibraryPermission === 'granted' ? '#4CAF50' : colors.text} 
+              />
+              <Text style={[styles.permissionItemText, { color: colors.text }]}>
+                Photo Library: {mediaLibraryPermission === 'granted' ? 'Granted' : 'Required'}
+              </Text>
+            </View>
+          </View>
+          
           <TouchableOpacity
             style={[styles.permissionButton, { backgroundColor: colors.tint }]}
-            onPress={requestPermission}
+            onPress={requestAllPermissions}
           >
-            <Text style={styles.permissionButtonText}>Grant Permission</Text>
+            <Text style={styles.permissionButtonText}>Grant Permissions</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.backButton, { borderColor: colors.tint }]}
@@ -154,45 +235,78 @@ export default function CameraPracticeScreen() {
 
   const saveVideo = async (videoUri: string) => {
     try {
-      // Request media library permissions
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      // Create a permanent file name and unique ID
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const recordingId = generateRecordingId();
+      const fileName = `SpeechCoach_Practice_${timestamp}.mp4`;
+      const documentDirectory = FileSystem.documentDirectory;
+      const localUri = `${documentDirectory}${fileName}`;
       
-      if (status === 'granted') {
-        // Create a permanent file name
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const fileName = `SpeechCoach_Practice_${timestamp}.mp4`;
-        const documentDirectory = FileSystem.documentDirectory;
-        const localUri = `${documentDirectory}${fileName}`;
-        
-        // Copy the video to app's document directory
-        await FileSystem.copyAsync({
-          from: videoUri,
-          to: localUri,
-        });
-        
-        // Save to device's photo library
-        const asset = await MediaLibrary.createAssetAsync(localUri);
-        await MediaLibrary.createAlbumAsync('SpeechCoach', asset, false);
-        
-        Alert.alert(
-          'Recording Saved!', 
-          'Your practice session has been saved to your photo library and app storage.',
-          [{ text: 'OK', style: 'default' }]
-        );
-        
-        console.log('Video saved to:', localUri);
-        console.log('Video saved to photo library');
+      // Copy the video to app's document directory
+      await FileSystem.copyAsync({
+        from: videoUri,
+        to: localUri,
+      });
+
+      // Get file size
+      let fileSize: number | undefined;
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(localUri);
+        if (fileInfo.exists && fileInfo.size) {
+          fileSize = fileInfo.size;
+        }
+      } catch (sizeError) {
+        console.warn('Could not get file size:', sizeError);
+      }
+
+      // Create recording metadata
+      const metadata: RecordingMetadata = {
+        id: recordingId,
+        fileName,
+        localUri,
+        timestamp,
+        promptText: introTexts[currentTextIndex],
+        facing,
+        createdAt: new Date(),
+        recordedDate: new Date().toLocaleDateString(),
+        fileSize,
+      };
+      
+      if (mediaLibraryPermission === 'granted') {
+        try {
+          // Save to device's photo library
+          const asset = await MediaLibrary.createAssetAsync(localUri);
+          await MediaLibrary.createAlbumAsync('SpeechCoach', asset, false);
+          
+          // Update metadata with photo library URI
+          metadata.photoLibraryUri = asset.uri;
+          
+          // Save metadata to local storage
+          await saveRecordingMetadata(metadata);
+          
+          Alert.alert(
+            'Recording Saved!', 
+            'Your practice session has been saved to your photo library and app storage.',
+            [{ text: 'OK', style: 'default' }]
+          );
+          
+          console.log('Video saved to:', localUri);
+          console.log('Video saved to photo library');
+        } catch (mediaError) {
+          console.error('Error saving to photo library:', mediaError);
+          
+          // Save metadata without photo library URI
+          await saveRecordingMetadata(metadata);
+          
+          Alert.alert(
+            'Recording Saved!', 
+            'Your practice session has been saved to app storage. Could not save to photo library.',
+            [{ text: 'OK', style: 'default' }]
+          );
+        }
       } else {
-        // Save only to app directory if no media library permission
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const fileName = `SpeechCoach_Practice_${timestamp}.mp4`;
-        const documentDirectory = FileSystem.documentDirectory;
-        const localUri = `${documentDirectory}${fileName}`;
-        
-        await FileSystem.copyAsync({
-          from: videoUri,
-          to: localUri,
-        });
+        // Save metadata without photo library URI
+        await saveRecordingMetadata(metadata);
         
         Alert.alert(
           'Recording Saved!', 
@@ -210,29 +324,95 @@ export default function CameraPracticeScreen() {
 
   const showSavedVideos = async () => {
     try {
-      const documentDirectory = FileSystem.documentDirectory;
-      if (!documentDirectory) {
-        Alert.alert('Error', 'Unable to access app storage directory.');
-        return;
-      }
+      const recordings = await getRecordingMetadata();
       
-      const files = await FileSystem.readDirectoryAsync(documentDirectory);
-      const videoFiles = files.filter(file => file.includes('SpeechCoach_Practice_') && file.endsWith('.mp4'));
-      
-      if (videoFiles.length === 0) {
-        Alert.alert('No Videos', 'No practice videos found in app storage.');
+      if (recordings.length === 0) {
+        Alert.alert('No Videos', 'No practice videos found.');
       } else {
-        const videoList = videoFiles.map((file, index) => `${index + 1}. ${file}`).join('\n');
+        const videoList = recordings
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .map((recording, index) => {
+            const date = new Date(recording.createdAt).toLocaleDateString();
+            const time = new Date(recording.createdAt).toLocaleTimeString();
+            const sizeText = recording.fileSize ? ` (${(recording.fileSize / 1024 / 1024).toFixed(1)} MB)` : '';
+            return `${index + 1}. ${date} ${time}${sizeText}\n   Prompt: "${recording.promptText.substring(0, 50)}..."`;
+          }).join('\n\n');
+        
+        const documentDirectory = FileSystem.documentDirectory;
         Alert.alert(
           'Saved Videos',
-          `Found ${videoFiles.length} practice video(s):\n\n${videoList}\n\nVideos are stored in:\n${documentDirectory}`,
-          [{ text: 'OK', style: 'default' }]
+          `Found ${recordings.length} practice video(s):\n\n${videoList}\n\nVideos are stored in:\n${documentDirectory}`,
+          [
+            { text: 'View All Metadata', onPress: () => showDetailedMetadata(recordings) },
+            { text: 'OK', style: 'default' }
+          ]
         );
       }
     } catch (error) {
       console.error('Error reading saved videos:', error);
       Alert.alert('Error', 'Failed to read saved videos.');
     }
+  };
+
+  const showDetailedMetadata = (recordings: RecordingMetadata[]) => {
+    const detailedInfo = recordings
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .map((recording, index) => {
+        const date = new Date(recording.createdAt).toLocaleString();
+        const size = recording.fileSize ? `${(recording.fileSize / 1024 / 1024).toFixed(1)} MB` : 'Unknown';
+        const photoLibrary = recording.photoLibraryUri ? 'Yes' : 'No';
+        return `${index + 1}. ${recording.fileName}\n   Date: ${date}\n   Size: ${size}\n   Camera: ${recording.facing}\n   In Photo Library: ${photoLibrary}\n   Prompt: "${recording.promptText}"`;
+      }).join('\n\n');
+    
+    Alert.alert(
+      'Recording Details',
+      detailedInfo,
+      [{ text: 'OK', style: 'default' }]
+    );
+  };
+
+  const showSettingsMenu = () => {
+    Alert.alert(
+      'Practice Settings',
+      'Choose an option:',
+      [
+        { 
+          text: 'View All Recordings', 
+          onPress: showSavedVideos 
+        },
+        { 
+          text: 'Export Metadata', 
+          onPress: async () => {
+            const metadata = await exportRecordingMetadata();
+            if (metadata) {
+              Alert.alert('Export Complete', `Exported ${metadata.length} recording(s) metadata to console.`);
+            }
+          }
+        },
+        { 
+          text: 'Clear All Metadata', 
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Clear Metadata',
+              'This will clear all recording metadata but keep the video files. Continue?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Clear', 
+                  style: 'destructive',
+                  onPress: async () => {
+                    await clearAllRecordingMetadata();
+                    Alert.alert('Cleared', 'All recording metadata has been cleared.');
+                  }
+                }
+              ]
+            );
+          }
+        },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
   };
 
   const handleClosePress = () => {
@@ -317,13 +497,13 @@ export default function CameraPracticeScreen() {
         <View style={styles.bottomControls}>
           <BlurView intensity={70} tint="dark" style={styles.bottomControlsBlur}>
             <View style={styles.controlsContainer}>
-              {/* Gallery/Library button */}
+              
               <TouchableOpacity
                 style={styles.sideButton}
-                onPress={showSavedVideos}
+                onPress={handleClosePress}
               >
                 <BlurView intensity={90} tint="dark" style={styles.sideButtonBlur}>
-                  <IconSymbol name="photo.on.rectangle" size={24} color="white" />
+                  <IconSymbol name="xmark" size={20} color="white" />
                 </BlurView>
               </TouchableOpacity>
 
@@ -357,7 +537,7 @@ export default function CameraPracticeScreen() {
               {/* Settings button */}
               <TouchableOpacity
                 style={styles.sideButton}
-                onPress={() => Alert.alert('Settings', 'Practice settings')}
+                onPress={showSettingsMenu}
               >
                 <BlurView intensity={90} tint="dark" style={styles.sideButtonBlur}>
                   <IconSymbol name="gear" size={24} color="white" />
@@ -437,6 +617,19 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  permissionStatus: {
+    gap: 12,
+    marginVertical: 16,
+  },
+  permissionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  permissionItemText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   topControls: {
     alignItems: 'center',
