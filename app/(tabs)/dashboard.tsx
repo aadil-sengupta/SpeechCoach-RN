@@ -1,13 +1,15 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import VideoPlayerModal from '@/components/VideoPlayerModal';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { RecordingMetadata, getRecordingMetadata } from '@/utils/recordingUtils';
+import { RecordingMetadata, formatDuration, getRecordingMetadata } from '@/utils/recordingUtils';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Image,
     SafeAreaView,
     StyleSheet,
     Text,
@@ -21,6 +23,8 @@ export default function DashboardScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [recordings, setRecordings] = useState<RecordingMetadata[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRecording, setSelectedRecording] = useState<RecordingMetadata | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Load recordings when screen comes into focus
   useFocusEffect(
@@ -47,38 +51,81 @@ export default function DashboardScreen() {
 
   // Calculate statistics
   const totalRecordings = recordings.length;
-  const totalSize = recordings.reduce((sum, recording) => sum + (recording.fileSize || 0), 0);
-  const averageSize = totalRecordings > 0 ? totalSize / totalRecordings : 0;
+  const totalDuration = recordings.reduce((sum, recording) => sum + (recording.duration || 0), 0);
+  const averageDuration = totalRecordings > 0 ? totalDuration / totalRecordings : 0;
   const recentRecordings = recordings.slice(0, 5); // Show last 5 recordings
+
+  const handleRecordingPress = (recording: RecordingMetadata) => {
+    setSelectedRecording(recording);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedRecording(null);
+  };
 
   // Render individual recording item
   const renderRecordingItem = ({ item }: { item: RecordingMetadata }) => (
-    <View style={[styles.recordingItem, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
-      <View style={styles.recordingHeader}>
-        <Text style={[styles.recordingDate, { color: colors.text }]}>
-          {item.recordedDate}
-        </Text>
-        <Text style={[styles.recordingTime, { color: colors.text + '80' }]}>
-          {new Date(item.createdAt).toLocaleTimeString()}
-        </Text>
+    <TouchableOpacity
+      style={[styles.recordingItem, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}
+      onPress={() => handleRecordingPress(item)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.recordingContent}>
+        {/* Thumbnail */}
+        <View style={styles.thumbnailContainer}>
+          {item.thumbnailUri ? (
+            <Image
+              source={{ uri: item.thumbnailUri }}
+              style={styles.thumbnail}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.thumbnailPlaceholder, { backgroundColor: colors.tint + '20' }]}>
+              <IconSymbol name="video.fill" size={24} color={colors.tint} />
+            </View>
+          )}
+          {/* Play button overlay */}
+          <View style={styles.playButtonOverlay}>
+            <View style={styles.playButton}>
+              <IconSymbol name="play.fill" size={16} color="white" />
+            </View>
+          </View>
+          {/* Duration badge */}
+          {item.duration && (
+            <View style={styles.durationBadge}>
+              <Text style={styles.durationText}>{formatDuration(item.duration)}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Content */}
+        <View style={styles.recordingDetails}>
+          <View style={styles.recordingHeader}>
+            <Text style={[styles.recordingDate, { color: colors.text }]}>
+              {item.recordedDate}
+            </Text>
+            <Text style={[styles.recordingTime, { color: colors.text + '80' }]}>
+              {new Date(item.createdAt).toLocaleTimeString()}
+            </Text>
+          </View>
+          <View style={styles.recordingMeta}>
+            <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
+              Camera: {item.facing === 'front' ? 'Front' : 'Back'}
+            </Text>
+            {item.fileSize && (
+              <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
+                {(item.fileSize / 1024 / 1024).toFixed(1)} MB
+              </Text>
+            )}
+            <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
+              {item.photoLibraryUri ? '📱 Saved' : '📁 Local'}
+            </Text>
+          </View>
+        </View>
       </View>
-      <Text style={[styles.recordingPrompt, { color: colors.text }]} numberOfLines={2}>
-        {item.promptText}
-      </Text>
-      <View style={styles.recordingDetails}>
-        <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
-          Camera: {item.facing === 'front' ? 'Front' : 'Back'}
-        </Text>
-        {item.fileSize && (
-          <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
-            Size: {(item.fileSize / 1024 / 1024).toFixed(1)} MB
-          </Text>
-        )}
-        <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
-          {item.photoLibraryUri ? '📱 Saved to Gallery' : '📁 App Storage Only'}
-        </Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -132,15 +179,15 @@ export default function DashboardScreen() {
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.tint }]}>
-                {(totalSize / 1024 / 1024).toFixed(1)}
+                {formatDuration(totalDuration)}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>MB Recorded</Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>Total Duration</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.tint }]}>
-                {(averageSize / 1024 / 1024).toFixed(1)}
+                {formatDuration(Math.round(averageDuration))}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>Avg MB/Session</Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>Avg Duration</Text>
             </View>
           </View>
         </View>
@@ -179,6 +226,13 @@ export default function DashboardScreen() {
           </View>
         )}
       </View>
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        visible={modalVisible}
+        recording={selectedRecording}
+        onClose={handleCloseModal}
+      />
     </SafeAreaView>
   );
 }
@@ -261,9 +315,64 @@ const styles = StyleSheet.create({
   },
   recordingItem: {
     borderRadius: 12,
-    padding: 16,
+    padding: 0,
     marginBottom: 12,
     borderWidth: 1,
+    overflow: 'hidden',
+  },
+  recordingContent: {
+    flexDirection: 'row',
+  },
+  thumbnailContainer: {
+    position: 'relative',
+    width: 120,
+    height: 90,
+  },
+  thumbnail: {
+    width: '100%',
+    height: '100%',
+  },
+  thumbnailPlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButtonOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  durationBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  durationText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  recordingDetails: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'space-between',
   },
   recordingHeader: {
     flexDirection: 'row',
@@ -279,13 +388,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.8,
   },
-  recordingPrompt: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-    fontStyle: 'italic',
-  },
-  recordingDetails: {
+  recordingMeta: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,

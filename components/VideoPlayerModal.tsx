@@ -1,0 +1,388 @@
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { RecordingMetadata, formatDuration } from '@/utils/recordingUtils';
+import { AVPlaybackStatus, ResizeMode, Video } from 'expo-av';
+import { BlurView } from 'expo-blur';
+import React, { useRef, useState } from 'react';
+import {
+    Dimensions,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+
+interface VideoPlayerModalProps {
+  visible: boolean;
+  recording: RecordingMetadata | null;
+  onClose: () => void;
+}
+
+export default function VideoPlayerModal({ visible, recording, onClose }: VideoPlayerModalProps) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const videoRef = useRef<Video>(null);
+  const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  if (!recording) return null;
+
+  const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+    setStatus(status);
+    if (status.isLoaded) {
+      setIsPlaying(status.isPlaying);
+    }
+  };
+
+  const handlePlayPause = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pauseAsync();
+      } else {
+        videoRef.current.playAsync();
+      }
+    }
+  };
+
+  const handleRestart = () => {
+    if (videoRef.current) {
+      videoRef.current.replayAsync();
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (date: Date) => {
+    return new Date(date).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={[styles.container, { backgroundColor: 'black' }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+          >
+            <BlurView intensity={80} tint="dark" style={styles.closeButtonBlur}>
+              <IconSymbol name="xmark" size={20} color="white" />
+            </BlurView>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Practice Session</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        {/* Video Player */}
+        <View style={styles.videoContainer}>
+          <Video
+            ref={videoRef}
+            style={styles.video}
+            source={{ uri: recording.localUri }}
+            useNativeControls={false}
+            resizeMode={ResizeMode.CONTAIN}
+            shouldPlay={false}
+            isLooping={false}
+            onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+          />
+
+          {/* Video Controls Overlay */}
+          <View style={styles.videoControls}>
+            <TouchableOpacity
+              style={styles.playButton}
+              onPress={handlePlayPause}
+            >
+              <BlurView intensity={80} tint="dark" style={styles.playButtonBlur}>
+                <IconSymbol
+                  name={isPlaying ? "pause.fill" : "play.fill"}
+                  size={32}
+                  color="white"
+                />
+              </BlurView>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.restartButton}
+              onPress={handleRestart}
+            >
+              <BlurView intensity={80} tint="dark" style={styles.controlButtonBlur}>
+                <IconSymbol name="arrow.clockwise" size={20} color="white" />
+              </BlurView>
+            </TouchableOpacity>
+          </View>
+
+          {/* Progress Bar */}
+          {status?.isLoaded && (
+            <View style={styles.progressContainer}>
+              <BlurView intensity={80} tint="dark" style={styles.progressBlur}>
+                <View style={styles.progressBar}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${(status.positionMillis / (status.durationMillis || 1)) * 100}%`,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.timeText}>
+                  {Math.round((status.positionMillis || 0) / 1000)}s / {Math.round((status.durationMillis || 0) / 1000)}s
+                </Text>
+              </BlurView>
+            </View>
+          )}
+        </View>
+
+        {/* Video Information */}
+        <ScrollView style={styles.infoContainer} showsVerticalScrollIndicator={false}>
+          <BlurView intensity={80} tint="dark" style={styles.infoBlur}>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoTitle}>Session Details</Text>
+              
+              <View style={styles.infoSection}>
+                <Text style={styles.infoLabel}>Date & Time</Text>
+                <Text style={styles.infoValue}>
+                  {formatDate(recording.createdAt)}
+                </Text>
+                <Text style={styles.infoSubValue}>
+                  {formatTime(recording.createdAt)}
+                </Text>
+              </View>
+
+              <View style={styles.infoSection}>
+                <Text style={styles.infoLabel}>Recording Details</Text>
+                <View style={styles.detailsRow}>
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Duration</Text>
+                    <Text style={styles.detailValue}>
+                      {recording.duration ? formatDuration(recording.duration) : 'Unknown'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Camera</Text>
+                    <Text style={styles.detailValue}>
+                      {recording.facing === 'front' ? 'Front' : 'Back'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.detailsRow}>
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>File Size</Text>
+                    <Text style={styles.detailValue}>
+                      {recording.fileSize ? `${(recording.fileSize / 1024 / 1024).toFixed(1)} MB` : 'Unknown'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Storage</Text>
+                    <Text style={styles.detailValue}>
+                      {recording.photoLibraryUri ? 'Gallery + App' : 'App Only'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.infoSection}>
+                <Text style={styles.infoLabel}>File Information</Text>
+                <Text style={styles.infoValue} numberOfLines={2}>
+                  {recording.fileName}
+                </Text>
+                <Text style={styles.infoSubValue} numberOfLines={3}>
+                  {recording.localUri}
+                </Text>
+              </View>
+            </View>
+          </BlurView>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  closeButtonBlur: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  videoContainer: {
+    position: 'relative',
+    height: height * 0.4,
+    backgroundColor: 'black',
+  },
+  video: {
+    flex: 1,
+  },
+  videoControls: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+  },
+  playButtonBlur: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restartButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
+  },
+  controlButtonBlur: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  progressBlur: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  progressBar: {
+    flex: 1,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#007AFF',
+  },
+  timeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  infoContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  infoBlur: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  infoContent: {
+    padding: 20,
+  },
+  infoTitle: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  infoSection: {
+    marginBottom: 20,
+  },
+  infoLabel: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+    opacity: 0.8,
+  },
+  infoValue: {
+    color: 'white',
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  infoSubValue: {
+    color: 'white',
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 4,
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  detailItem: {
+    flex: 1,
+  },
+  detailLabel: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+    opacity: 0.7,
+    marginBottom: 2,
+  },
+  detailValue: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});

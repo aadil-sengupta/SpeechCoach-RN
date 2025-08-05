@@ -5,9 +5,12 @@ import {
     RecordingMetadata,
     clearAllRecordingMetadata,
     exportRecordingMetadata,
+    formatDuration,
     generateRecordingId,
+    generateVideoThumbnail,
     getRecordingMetadata,
-    saveRecordingMetadata
+    getVideoDuration,
+    saveRecordingMetadata,
 } from '@/utils/recordingUtils';
 import { BlurView } from 'expo-blur';
 import { CameraType, CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -45,6 +48,7 @@ const introTexts = [
 export default function CameraPracticeScreen() {
   const [facing, setFacing] = useState<CameraType>('front');
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
@@ -214,10 +218,12 @@ export default function CameraPracticeScreen() {
     if (isRecording) {
       // Stop recording
       setIsRecording(false);
+      setRecordingStartTime(null);
       cameraRef.current.stopRecording();
     } else {
       // Start recording
       setIsRecording(true);
+      setRecordingStartTime(Date.now());
       try {
         const video = await cameraRef.current.recordAsync({
           maxDuration: 30, // 30 second limit
@@ -229,6 +235,7 @@ export default function CameraPracticeScreen() {
       } catch (error) {
         console.error('Recording failed:', error);
         setIsRecording(false);
+        setRecordingStartTime(null);
       }
     }
   };
@@ -259,17 +266,30 @@ export default function CameraPracticeScreen() {
         console.warn('Could not get file size:', sizeError);
       }
 
+      // Get video duration from the actual video file
+      const duration = await getVideoDuration(localUri);
+
+      // Generate thumbnail
+      let thumbnailUri: string | undefined;
+      try {
+        thumbnailUri = await generateVideoThumbnail(localUri, recordingId);
+      } catch (thumbnailError) {
+        console.warn('Could not generate thumbnail:', thumbnailError);
+      }
+
       // Create recording metadata
       const metadata: RecordingMetadata = {
         id: recordingId,
         fileName,
         localUri,
+        thumbnailUri,
         timestamp,
         promptText: introTexts[currentTextIndex],
         facing,
         createdAt: new Date(),
         recordedDate: new Date().toLocaleDateString(),
         fileSize,
+        duration, // Duration in seconds from video file
       };
       
       if (mediaLibraryPermission === 'granted') {
@@ -334,8 +354,9 @@ export default function CameraPracticeScreen() {
           .map((recording, index) => {
             const date = new Date(recording.createdAt).toLocaleDateString();
             const time = new Date(recording.createdAt).toLocaleTimeString();
-            const sizeText = recording.fileSize ? ` (${(recording.fileSize / 1024 / 1024).toFixed(1)} MB)` : '';
-            return `${index + 1}. ${date} ${time}${sizeText}\n   Prompt: "${recording.promptText.substring(0, 50)}..."`;
+            const durationText = recording.duration ? ` (${formatDuration(recording.duration)})` : '';
+            const sizeText = recording.fileSize ? ` - ${(recording.fileSize / 1024 / 1024).toFixed(1)} MB` : '';
+            return `${index + 1}. ${date} ${time}${durationText}${sizeText}`;
           }).join('\n\n');
         
         const documentDirectory = FileSystem.documentDirectory;
@@ -360,8 +381,9 @@ export default function CameraPracticeScreen() {
       .map((recording, index) => {
         const date = new Date(recording.createdAt).toLocaleString();
         const size = recording.fileSize ? `${(recording.fileSize / 1024 / 1024).toFixed(1)} MB` : 'Unknown';
+        const duration = recording.duration ? formatDuration(recording.duration) : 'Unknown';
         const photoLibrary = recording.photoLibraryUri ? 'Yes' : 'No';
-        return `${index + 1}. ${recording.fileName}\n   Date: ${date}\n   Size: ${size}\n   Camera: ${recording.facing}\n   In Photo Library: ${photoLibrary}\n   Prompt: "${recording.promptText}"`;
+        return `${index + 1}. ${recording.fileName}\n   Date: ${date}\n   Duration: ${duration}\n   Size: ${size}\n   Camera: ${recording.facing}\n   In Photo Library: ${photoLibrary}`;
       }).join('\n\n');
     
     Alert.alert(
@@ -430,6 +452,7 @@ export default function CameraPracticeScreen() {
                 cameraRef.current.stopRecording();
               }
               setIsRecording(false);
+              setRecordingStartTime(null);
               router.back();
             }
           },
