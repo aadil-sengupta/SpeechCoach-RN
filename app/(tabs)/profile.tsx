@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, clearAuthData } = useAuth();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -23,6 +23,17 @@ export default function ProfileScreen() {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Sign Out', style: 'destructive', onPress: logout },
+      ]
+    );
+  };
+
+  const handleClearAuthData = () => {
+    Alert.alert(
+      'Clear All Data',
+      'This will clear all stored authentication data and take you to the login screen.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear Data', style: 'destructive', onPress: clearAuthData },
       ]
     );
   };
@@ -45,6 +56,13 @@ export default function ProfileScreen() {
           onPress={handleLogout}
         >
           <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: '#FF9500', marginTop: 16 }]}
+          onPress={handleClearAuthData}
+        >
+          <Text style={styles.logoutText}>Clear Auth Data</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

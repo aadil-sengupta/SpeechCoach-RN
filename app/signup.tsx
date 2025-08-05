@@ -46,7 +46,7 @@ export default function SignupScreen() {
     const success = await signup(email, password, name);
     
     if (success) {
-      router.replace('/(tabs)');
+      router.replace('/dashboard');
     } else {
       Alert.alert('Error', 'Failed to create account');
     }
@@ -54,7 +54,7 @@ export default function SignupScreen() {
   };
 
   const navigateToLogin = () => {
-    router.push('/login' as any);
+    router.push('/login');
   };
 
   return (

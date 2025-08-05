@@ -1,14 +1,24 @@
+import LoginScreen from '@/app/login';
+import SignupScreen from '@/app/signup';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Stack } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function AuthNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const [currentAuthScreen, setCurrentAuthScreen] = useState<'login' | 'signup'>('login');
+
+  // Reset to login screen when user logs out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCurrentAuthScreen('login');
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -18,28 +28,25 @@ export default function AuthNavigator() {
     );
   }
 
+  // Instead of conditional screens, render the appropriate component directly
+  if (!isAuthenticated) {
+    if (currentAuthScreen === 'signup') {
+      return <SignupScreen onNavigateToLogin={() => setCurrentAuthScreen('login')} />;
+    }
+    return <LoginScreen onNavigateToSignup={() => setCurrentAuthScreen('signup')} />;
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
-        // Authenticated user screens
-        <>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen 
-            name="camera-practice" 
-            options={{ 
-              presentation: 'fullScreenModal',
-              animation: 'slide_from_bottom',
-            }} 
-          />
-          <Stack.Screen name="+not-found" />
-        </>
-      ) : (
-        // Non-authenticated user screens
-        <>
-          <Stack.Screen name="login" />
-          <Stack.Screen name="signup" />
-        </>
-      )}
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen 
+        name="camera-practice" 
+        options={{ 
+          presentation: 'fullScreenModal',
+          animation: 'slide_from_bottom',
+        }} 
+      />
+      <Stack.Screen name="+not-found" />
     </Stack>
   );
 }

@@ -1,13 +1,27 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
 
 import CustomTabBar from '@/components/CustomTabBar';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // Show loading or redirect to login if not authenticated
+  if (isLoading || !isAuthenticated) {
+    return null; // The useEffect will handle the redirect
+  }
 
   return (
     <Tabs
@@ -30,7 +44,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="progress"
         options={{
           title: 'Progress',
@@ -42,7 +56,7 @@ export default function TabLayout() {
             />
           ),
         }}
-      />
+      /> */}
       
       {/* Center practice button - will be handled specially in CustomTabBar */}
       <Tabs.Screen
@@ -74,19 +88,6 @@ export default function TabLayout() {
         }}
       />
       
-      {/* Hide the old screens */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }

@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  clearAuthData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,6 +104,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const clearAuthData = async () => {
+    try {
+      await AsyncStorage.clear();
+      setUser(null);
+      console.log('All authentication data cleared');
+    } catch (error) {
+      console.error('Clear auth data error:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -110,6 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     signup,
     logout,
+    clearAuthData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

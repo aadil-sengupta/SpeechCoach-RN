@@ -1,10 +1,10 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import 'react-native-reanimated';
 
-import AuthNavigator from '@/components/AuthNavigator';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -21,7 +21,19 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <AuthNavigator />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signup" />
+          <Stack.Screen 
+            name="camera-practice" 
+            options={{ 
+              presentation: 'fullScreenModal',
+              animation: 'slide_from_bottom',
+            }} 
+          />
+          <Stack.Screen name="+not-found" />
+        </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
     </AuthProvider>

@@ -34,7 +34,7 @@ export default function LoginScreen() {
     const success = await login(email, password);
     
     if (success) {
-      router.replace('/(tabs)');
+      router.replace('/dashboard');
     } else {
       Alert.alert('Error', 'Invalid credentials');
     }
@@ -42,7 +42,7 @@ export default function LoginScreen() {
   };
 
   const navigateToSignup = () => {
-    router.push('/signup' as any);
+    router.push('/signup');
   };
 
   return (
