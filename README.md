@@ -1,50 +1,125 @@
-# Welcome to your Expo app 👋
+# SpeechCoach 🎤
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile app designed to help users improve their public speaking and presentation skills through self-analysis and repetitive practice.
 
-## Get started
+## � Download
 
-1. Install dependencies
+The latest APK is available for download on the release page of this repo.
 
+## 🎯 About
+
+SpeechCoach is primarily aimed at **self-analysis** and **repetitive practice** to help users:
+- Record practice sessions with video and audio
+- Review recordings with focused analysis modes (audio-only, video-only, or both)
+- Track progress over time with session statistics
+- Take notes on their own performance for continuous improvement
+
+### 🚧 AI Analysis Feature (Coming Soon)
+We're currently developing an AI-powered speech analysis feature that will provide automated feedback on speech patterns, clarity, pace, and delivery.
+
+## ✨ Upcoming Features
+
+- **Friends & Social Features** - Connect with friends for feedback and motivation
+- **Custom Learning Roadmap** - Personalized improvement paths based on your goals
+- **Detailed Skills Analytics** - In-depth insights into your speaking abilities
+- **Smart Notifications** - Gentle reminders to maintain consistent practice
+- **And much more!**
+
+## 🚀 Getting Started
+
+### Option 1: Download APK (Recommended for Users)
+
+1. **Download the latest APK** from the [Releases page](https://github.com/aadil-sengupta/SpeechCoach-RN/releases)
+2. **Install on your Android device** by enabling "Install from unknown sources" in your device settings
+3. **Start practicing!** - Create an account and begin your speech improvement journey
+
+### Option 2: Development Setup
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v16 or higher)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- [React Native development environment](https://reactnative.dev/docs/environment-setup)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/aadil-sengupta/SpeechCoach-RN.git
+   cd SpeechCoach-RN
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. **Start the development server**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run on your device**
+   - Scan the QR code with [Expo Go](https://expo.dev/go) app
+   - Or run on [iOS Simulator](https://docs.expo.dev/workflow/ios-simulator/) / [Android Emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Development
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Project Structure
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+SpeechCoach-RN/
+├── app/                    # Main app screens (file-based routing)
+├── components/             # Reusable UI components
+├── constants/             # App constants and theme
+├── contexts/              # React contexts
+├── hooks/                 # Custom React hooks
+├── utils/                 # Utility functions
+└── assets/                # Images, fonts, and other assets
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Key Technologies
 
-## Learn more
+- **React Native** with **Expo**
+- **TypeScript** for type safety
+- **Expo Router** for navigation
+- **Expo AV** for video recording and playback
+- **AsyncStorage** for local data persistence
 
-To learn more about developing your project with Expo, look at the following resources:
+### Building for Production
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+# Build for Android
+npx expo build:android
 
-## Join the community
+# Build for iOS
+npx expo build:ios
+```
 
-Join our community of developers creating universal apps.
+## 📱 Platform Support
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- ✅ **Android** (Primary platform)
+- ✅ **iOS** (Full support)
+- 🚧 **Web** (Limited functionality)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+**Aadil Sengupta** - [@aadil-sengupta](https://github.com/aadil-sengupta)
+
+Project Link: [https://github.com/aadil-sengupta/SpeechCoach-RN](https://github.com/aadil-sengupta/SpeechCoach-RN)
+
+---
+
+⭐ **Star this repository if you find it helpful!**
