@@ -31,9 +31,9 @@ export default function AuthNavigator() {
   // Instead of conditional screens, render the appropriate component directly
   if (!isAuthenticated) {
     if (currentAuthScreen === 'signup') {
-      return <SignupScreen onNavigateToLogin={() => setCurrentAuthScreen('login')} />;
+      return <SignupScreen />;
     }
-    return <LoginScreen onNavigateToSignup={() => setCurrentAuthScreen('signup')} />;
+    return <LoginScreen />;
   }
 
   return (

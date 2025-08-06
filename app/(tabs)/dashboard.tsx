@@ -12,6 +12,7 @@ import {
     FlatList,
     Image,
     SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -68,14 +69,17 @@ export default function DashboardScreen() {
   };
 
   // Render individual recording item
-  const renderRecordingItem = ({ item }: { item: RecordingMetadata }) => (
+  const renderRecordingItem = ({ item, index }: { item: RecordingMetadata; index: number }) => (
     <TouchableOpacity
-      style={[styles.recordingItem, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}
+      style={[styles.recordingItem, { 
+        backgroundColor: colors.background,
+        borderColor: colors.tint + '20',
+        shadowColor: colors.text + '20',
+      }]}
       onPress={() => handleRecordingPress(item)}
-      activeOpacity={0.7}
+      activeOpacity={0.8}
     >
       <View style={styles.recordingContent}>
-        {/* Thumbnail */}
         <View style={styles.thumbnailContainer}>
           {item.thumbnailUri ? (
             <Image
@@ -84,40 +88,68 @@ export default function DashboardScreen() {
               resizeMode="cover"
             />
           ) : (
-            <View style={[styles.thumbnailPlaceholder, { backgroundColor: colors.tint + '20' }]}>
-              <IconSymbol name="video.fill" size={24} color={colors.tint} />
+            <View style={[styles.thumbnailPlaceholder, { backgroundColor: colors.tint + '15' }]}>
+              <IconSymbol name="video.fill" size={28} color={colors.tint} />
             </View>
           )}
-          {/* Play button overlay */}
+          {/* Enhanced Play button overlay */}
           <View style={styles.playButtonOverlay}>
-            <View style={styles.playButton}>
-              <IconSymbol name="play.fill" size={16} color="white" />
+            <View style={[styles.playButton, { backgroundColor: colors.tint + 'CC' }]}>
+              <IconSymbol name="play.fill" size={18} color="white" />
             </View>
           </View>
-          {/* Duration badge */}
-          {item.duration && (
-            <View style={styles.durationBadge}>
+          
+          {/* {item.duration && (
+            <View style={[styles.durationBadge, { backgroundColor: colors.tint }]}>
               <Text style={styles.durationText}>{formatDuration(item.duration)}</Text>
             </View>
-          )}
+          )} */}
+          {/* Session number badge */}
+          <View style={[styles.sessionBadge, { backgroundColor: colors.background }]}>
+            <Text style={[styles.sessionNumber, { color: colors.tint }]}>#{index + 1}</Text>
+          </View>
         </View>
 
-        {/* Content */}
+        {/* Enhanced Content */}
         <View style={styles.recordingDetails}>
-          <View style={styles.recordingHeader}>
-            <Text style={[styles.recordingDate, { color: colors.text }]}>
-              {item.recordedDate}
+          <View style={styles.recordingMain}>
+            <Text style={[styles.sessionTitle, { color: colors.text }]}>
+              Practice Session #{index + 1}
             </Text>
-            <Text style={[styles.recordingTime, { color: colors.text + '80' }]}>
-              {new Date(item.createdAt).toLocaleTimeString()}
-            </Text>
-          </View>
-          <View style={styles.recordingMeta}>
-            {item.fileSize && (
-              <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
-                {(item.fileSize / 1024 / 1024).toFixed(1)} MB
+            <View style={styles.dateTimeRow}>
+              <Text style={[styles.recordingDate, { color: colors.text }]}>
+                {item.recordedDate}
               </Text>
-            )}
+              <Text style={[styles.recordingTime, { color: colors.text + '70' }]}>
+                {new Date(item.createdAt).toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: true 
+                })}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.recordingFooter}>
+            <View style={styles.recordingMeta}>
+              {item.duration && (
+                <View style={styles.metaItem}>
+                  <IconSymbol name="clock" size={12} color={colors.text + '60'} />
+                  <Text style={[styles.metaText, { color: colors.text + '60' }]}>
+                    {formatDuration(item.duration)}
+                  </Text>
+                </View>
+              )}
+              {item.fileSize && (
+                <View style={styles.metaItem}>
+                  <IconSymbol name="doc" size={12} color={colors.text + '60'} />
+                  <Text style={[styles.metaText, { color: colors.text + '60' }]}>
+                    {(item.fileSize / 1024 / 1024).toFixed(1)} MB
+                  </Text>
+                </View>
+              )}
+            </View>
+            <IconSymbol name="chevron.right" size={16} color={colors.text + '40'} />
           </View>
         </View>
       </View>
@@ -137,7 +169,11 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
@@ -209,32 +245,46 @@ export default function DashboardScreen() {
             </Text>
             <FlatList
               data={recentRecordings}
-              renderItem={renderRecordingItem}
+              renderItem={({ item, index }) => renderRecordingItem({ item, index })}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               style={styles.recordingsList}
+              scrollEnabled={false}
             />
             {totalRecordings > 5 && (
-              <TouchableOpacity style={[styles.viewMoreButton, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
+              <TouchableOpacity style={[styles.viewMoreButton, { 
+                backgroundColor: colors.background, 
+                borderColor: colors.tint + '30',
+                shadowColor: colors.text + '20',
+              }]}>
                 <Text style={[styles.viewMoreText, { color: colors.tint }]}>
                   View all {totalRecordings} recordings
                 </Text>
-                <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                <IconSymbol name="chevron.right" size={18} color={colors.tint} />
               </TouchableOpacity>
             )}
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <IconSymbol name="mic.fill" size={64} color={colors.tint + '40'} />
+            <View style={[styles.emptyIconContainer, { backgroundColor: colors.tint + '15' }]}>
+              <IconSymbol name="mic.fill" size={48} color={colors.tint} />
+            </View>
             <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
               Ready to start practicing?
             </Text>
-            <Text style={[styles.emptyStateText, { color: colors.text + '80' }]}>
-              Your recordings will appear here after you complete your first practice session.
+            <Text style={[styles.emptyStateText, { color: colors.text + '70' }]}>
+              Your practice sessions will appear here after you complete your first recording.
             </Text>
+            <TouchableOpacity 
+              style={[styles.startPracticeButton, { backgroundColor: colors.tint }]}
+              onPress={() => router.push('/camera-practice')}
+            >
+              <IconSymbol name="video.fill" size={20} color="black" />
+              <Text style={styles.startPracticeText}>Start Your First Session</Text>
+            </TouchableOpacity>
           </View>
         )}
-      </View>
+      </ScrollView>
 
       {/* Video Player Modal */}
       <VideoPlayerModal
@@ -251,9 +301,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
@@ -312,7 +362,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   recordingsSection: {
-    flex: 1,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,
@@ -320,32 +370,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   recordingsList: {
-    flex: 1,
+    flexGrow: 0,
   },
   recordingItem: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 0,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
     overflow: 'hidden',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   recordingContent: {
     flexDirection: 'row',
   },
   thumbnailContainer: {
     position: 'relative',
-    width: 120,
-    height: 90,
+    width: 130,
+    height: 100,
   },
   thumbnail: {
     width: '100%',
     height: '100%',
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
   thumbnailPlaceholder: {
     width: '100%',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
   playButtonOverlay: {
     position: 'absolute',
@@ -357,86 +418,159 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   durationBadge: {
     position: 'absolute',
-    bottom: 4,
-    right: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    bottom: 6,
+    right: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   durationText: {
     color: 'white',
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  sessionBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  sessionNumber: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   recordingDetails: {
     flex: 1,
     padding: 16,
     justifyContent: 'space-between',
   },
-  recordingHeader: {
+  recordingMain: {
+    flex: 1,
+  },
+  sessionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  dateTimeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   recordingDate: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '500',
   },
   recordingTime: {
-    fontSize: 14,
-    opacity: 0.8,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  recordingFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   recordingMeta: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    gap: 16,
   },
-  recordingDetail: {
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
     fontSize: 12,
-    opacity: 0.6,
+    fontWeight: '500',
   },
   viewMoreButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
     borderWidth: 1,
-    marginTop: 16,
+    marginBottom: 90,
+    marginTop: 0,
     gap: 8,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   viewMoreText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    gap: 16,
+    gap: 20,
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-    opacity: 0.7,
+    marginBottom: 8,
+  },
+  startPracticeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 16,
+    gap: 8,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  startPracticeText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '700',
   },
   aiInsightsBanner: {
     padding: 16,

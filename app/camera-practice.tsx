@@ -60,7 +60,7 @@ export default function CameraPracticeScreen() {
   
   // Animation values for fade transition
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const textChangeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const textChangeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Function to animate text change
   const changeText = () => {

@@ -18,6 +18,7 @@ export interface RecordingMetadata {
   createdAt: Date;
   recordedDate: string;
   fileSize?: number;
+  observations?: string;
 }
 
 // Constants for AsyncStorage
@@ -178,5 +179,21 @@ export const getRecordingStatistics = async () => {
       recordingsByDate: {},
       mostRecentRecording: null
     };
+  }
+};
+
+// Function to update observations for a specific recording
+export const updateRecordingObservations = async (recordingId: string, observations: string): Promise<void> => {
+  try {
+    const existingRecordings = await getRecordingMetadata();
+    const updatedRecordings = existingRecordings.map(recording => 
+      recording.id === recordingId 
+        ? { ...recording, observations }
+        : recording
+    );
+    await AsyncStorage.setItem(RECORDINGS_STORAGE_KEY, JSON.stringify(updatedRecordings));
+    console.log('Recording observations updated for:', recordingId);
+  } catch (error) {
+    console.error('Error updating recording observations:', error);
   }
 };

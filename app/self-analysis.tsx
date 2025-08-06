@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { RecordingMetadata, getRecordingMetadata } from '@/utils/recordingUtils';
+import { RecordingMetadata, getRecordingMetadata, updateRecordingObservations } from '@/utils/recordingUtils';
 import { AVPlaybackStatus, ResizeMode, Video } from 'expo-av';
 import { BlurView } from 'expo-blur';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -42,7 +42,7 @@ export default function SelfAnalysisScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     console.log('SelfAnalysisScreen mounted with recordingId:', recordingId);
@@ -75,6 +75,10 @@ export default function SelfAnalysisScreen() {
       
       if (targetRecording) {
         setRecording(targetRecording);
+        // Load existing observations if they exist
+        if (targetRecording.observations) {
+          setUserNotes(targetRecording.observations);
+        }
       } else {
         Alert.alert(
           'Recording Not Found',
@@ -224,8 +228,19 @@ export default function SelfAnalysisScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Introduction Banner */}
+        <View style={[styles.introCard, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
+          <View style={styles.introHeader}>
+            <IconSymbol name="lightbulb" size={20} color={colors.tint} />
+            <Text style={[styles.introTitle, { color: colors.tint }]}>Self-Analysis Benefits</Text>
+          </View>
+          <Text style={[styles.introText, { color: colors.text + '90' }]}>
+            Focusing on individual aspects of your speech—audio clarity or visual presence—helps you identify specific areas for improvement and build stronger presentation skills over time.
+          </Text>
+        </View>
+
         {/* AI Analysis Coming Soon Banner */}
-        <BlurView intensity={20} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={styles.aiProcessingBanner}>
+        {/* <BlurView intensity={20} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={styles.aiProcessingBanner}>
           <View style={styles.aiProcessingContent}>
             <IconSymbol name="brain" size={20} color={colors.tint} />
             <View style={styles.aiProcessingTextContainer}>
@@ -237,7 +252,7 @@ export default function SelfAnalysisScreen() {
               </Text>
             </View>
           </View>
-        </BlurView>
+        </BlurView> */}
 
         {/* Video Player */}
         {isFullscreen ? (
@@ -605,51 +620,7 @@ export default function SelfAnalysisScreen() {
           </Animated.View>
         </View>
 
-        {/* AI Analysis Coming Soon Section */}
-        <View style={[styles.comingSoonCard, { backgroundColor: colors.text + '05', borderColor: colors.tint + '30' }]}>
-          <View style={styles.comingSoonHeader}>
-            <IconSymbol name="brain" size={24} color={colors.tint} />
-            <Text style={[styles.comingSoonTitle, { color: colors.text }]}>AI Speech Analysis</Text>
-            <View style={[styles.comingSoonBadge, { backgroundColor: colors.tint + '20' }]}>
-              <Text style={[styles.comingSoonBadgeText, { color: colors.tint }]}>Coming Soon</Text>
-            </View>
-          </View>
-          
-          <Text style={[styles.comingSoonDescription, { color: colors.text + '80' }]}>
-            We're developing an AI-powered speech analysis feature that will provide:
-          </Text>
-          
-          <View style={styles.comingSoonFeatures}>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Speech clarity and pace analysis
-              </Text>
-            </View>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Filler word detection and feedback
-              </Text>
-            </View>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Personalized improvement suggestions
-              </Text>
-            </View>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Speech transcription and confidence scoring
-              </Text>
-            </View>
-          </View>
-          
-          <Text style={[styles.comingSoonFooter, { color: colors.text + '70' }]}>
-            For now, use the self-analysis tools below to review your recording manually.
-          </Text>
-        </View>
+ 
 
         {/* Self-Analysis Notes Section */}
         <View style={[styles.notesCard, { backgroundColor: colors.text + '05' }]}>
@@ -715,9 +686,18 @@ export default function SelfAnalysisScreen() {
         {/* Complete Analysis Button */}
         <TouchableOpacity 
           style={[styles.completeButton, { backgroundColor: colors.tint }]}
-          onPress={() => {
+          onPress={async () => {
+            // Save observations if provided
+            if (userNotes.trim() && recording) {
+              try {
+                await updateRecordingObservations(recording.id, userNotes.trim());
+              } catch (error) {
+                console.error('Error saving observations:', error);
+              }
+            }
+            
             const completionMessage = userNotes.trim() 
-              ? 'Great job reviewing your recording and sharing your insights! Your observations will help track your progress over time.'
+              ? 'Great job reviewing your recording and sharing your insights! Your observations have been saved and will help track your progress over time.'
               : 'Great job reviewing your recording! Consider adding your observations next time to track your improvement journey.';
             
             Alert.alert(
@@ -730,6 +710,52 @@ export default function SelfAnalysisScreen() {
           <IconSymbol name="checkmark.circle.fill" size={24} color="black" />
           <Text style={styles.completeButtonText}>Complete Self-Analysis</Text>
         </TouchableOpacity>
+
+                 {/* AI Analysis Coming Soon Section */}
+        <View style={[styles.comingSoonCard, { backgroundColor: colors.text + '05', borderColor: colors.tint + '30' }]}>
+          <View style={styles.comingSoonHeader}>
+            <IconSymbol name="brain" size={24} color={colors.tint} />
+            <Text style={[styles.comingSoonTitle, { color: colors.text }]}>AI Speech Analysis</Text>
+            <View style={[styles.comingSoonBadge, { backgroundColor: colors.tint + '20' }]}>
+              <Text style={[styles.comingSoonBadgeText, { color: colors.tint }]}>Coming Soon</Text>
+            </View>
+          </View>
+          
+          <Text style={[styles.comingSoonDescription, { color: colors.text + '80' }]}>
+            We're developing an AI-powered speech analysis feature that will provide:
+          </Text>
+          
+          <View style={styles.comingSoonFeatures}>
+            <View style={styles.comingSoonFeature}>
+              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
+              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
+                Speech clarity and pace analysis
+              </Text>
+            </View>
+            <View style={styles.comingSoonFeature}>
+              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
+              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
+                Filler word detection and feedback
+              </Text>
+            </View>
+            <View style={styles.comingSoonFeature}>
+              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
+              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
+                Personalized improvement suggestions
+              </Text>
+            </View>
+            <View style={styles.comingSoonFeature}>
+              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
+              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
+                Speech transcription and confidence scoring
+              </Text>
+            </View>
+          </View>
+          
+          <Text style={[styles.comingSoonFooter, { color: colors.text + '70' }]}>
+            For now, use the self-analysis tools above to review your recording manually.
+          </Text>
+        </View>
 
         <View style={{ height: 50 }} />
       </ScrollView>
@@ -786,6 +812,27 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  introCard: {
+    margin: 20,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  introHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  introTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  introText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   aiProcessingBanner: {
     margin: 20,

@@ -52,6 +52,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      // Simulate network request delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Simulate API call
       if (email && password) {
         const userData = {
@@ -74,6 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
+      // Simulate network request delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Simulate API call
       if (email && password && name) {
         const userData = {

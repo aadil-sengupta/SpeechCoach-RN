@@ -212,6 +212,18 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
                 </Text>
               </View>
 
+              {/* User Observations */}
+              {recording.observations && (
+                <View style={styles.infoSection}>
+                  <Text style={styles.infoLabel}>Your Analysis Notes</Text>
+                  <View style={styles.observationsContainer}>
+                    <Text style={styles.observationsText}>
+                      {recording.observations}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
               {/* Self-Analysis Button */}
               <View style={styles.actionSection}>
                 <TouchableOpacity
@@ -400,6 +412,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+  },
+  observationsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  observationsText: {
+    color: 'white',
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.9,
   },
   actionSection: {
     marginTop: 24,

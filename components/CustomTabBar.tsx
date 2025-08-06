@@ -107,7 +107,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                     colors={['rgba(255,255,255,0.8)', 'transparent']}
                     style={styles.practiceHighlight}
                     start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 0.5 }}
+                    end={{ x: 0, y: 0 }}
                   />
                   
                   <View style={styles.practiceInner}>
