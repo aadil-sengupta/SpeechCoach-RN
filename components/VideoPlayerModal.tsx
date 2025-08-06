@@ -215,7 +215,7 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
               {/* Self-Analysis Button */}
               <View style={styles.actionSection}>
                 <TouchableOpacity
-                  style={[styles.selfAnalysisButton, { backgroundColor: colors.tint, color: 'black' }]}
+                  style={[styles.selfAnalysisButton, { backgroundColor: colors.tint }]}
                   onPress={handleSelfAnalysis}
                   activeOpacity={0.8}
                 >
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   selfAnalysisButtonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 16,
     fontWeight: '600',
   },

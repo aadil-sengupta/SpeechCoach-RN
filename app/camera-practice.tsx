@@ -307,7 +307,7 @@ export default function CameraPracticeScreen() {
           // Ask user about self-analysis
           Alert.alert(
             'Recording Saved!', 
-            'Your practice session has been saved to your photo library and app storage.\n\nWould you like to review your recording now for self-analysis? (AI analysis will be available later regardless of your choice)',
+            'Your practice session has been saved to your photo library and app storage.\n\nWould you like to review your recording now for self-analysis?\n\n🚧 AI analysis feature coming soon!',
             [
               { 
                 text: 'Review Later', 
@@ -316,7 +316,7 @@ export default function CameraPracticeScreen() {
                   console.log('User chose to skip immediate self-analysis');
                   Alert.alert(
                     'Saved Successfully',
-                    'Your recording is saved. You can review it anytime from the Dashboard, and AI analysis will be processed automatically.',
+                    'Your recording is saved. You can review it anytime from the Dashboard.\n\n🚧 AI speech analysis is in development and will be available soon!',
                     [{ text: 'OK' }]
                   );
                 }
@@ -353,7 +353,7 @@ export default function CameraPracticeScreen() {
           // Ask user about self-analysis
           Alert.alert(
             'Recording Saved!', 
-            'Your practice session has been saved to app storage. Could not save to photo library.\n\nWould you like to review your recording now for self-analysis? (AI analysis will be available later regardless of your choice)',
+            'Your practice session has been saved to app storage. Could not save to photo library.\n\nWould you like to review your recording now for self-analysis?\n\n🚧 AI analysis feature coming soon!',
             [
               { 
                 text: 'Review Later', 
@@ -362,7 +362,7 @@ export default function CameraPracticeScreen() {
                   console.log('User chose to skip immediate self-analysis');
                   Alert.alert(
                     'Saved Successfully',
-                    'Your recording is saved. You can review it anytime from the Dashboard, and AI analysis will be processed automatically.',
+                    'Your recording is saved. You can review it anytime from the Dashboard.\n\n🚧 AI speech analysis is in development and will be available soon!',
                     [{ text: 'OK' }]
                   );
                 }
@@ -395,7 +395,7 @@ export default function CameraPracticeScreen() {
         // Ask user about self-analysis
         Alert.alert(
           'Recording Saved!', 
-          'Your practice session has been saved to app storage.\n\nWould you like to review your recording now for self-analysis? (AI analysis will be available later regardless of your choice)',
+          'Your practice session has been saved to app storage.\n\nWould you like to review your recording now for self-analysis?\n\n🚧 AI analysis feature coming soon!',
           [
             { 
               text: 'Review Later', 
@@ -404,7 +404,7 @@ export default function CameraPracticeScreen() {
                 console.log('User chose to skip immediate self-analysis');
                 Alert.alert(
                   'Saved Successfully',
-                  'Your recording is saved. You can review it anytime from the Dashboard, and AI analysis will be processed automatically.',
+                  'Your recording is saved. You can review it anytime from the Dashboard.\n\n🚧 AI speech analysis is in development and will be available soon!',
                   [{ text: 'OK' }]
                 );
               }

@@ -188,6 +188,19 @@ export default function DashboardScreen() {
           </View>
         </View>
 
+
+        {/* <View style={[styles.aiInsightsBanner, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
+          <View style={styles.bannerContent}>
+            <View style={styles.bannerHeader}>
+              <IconSymbol name="brain" size={24} color={colors.tint} />
+              <Text style={[styles.bannerTitle, { color: colors.tint }]}>🚧 AI Speech Insights - Coming Soon!</Text>
+            </View>
+            <Text style={[styles.bannerDescription, { color: colors.text + '80' }]}>
+              Get personalized feedback on your speech patterns, pacing, and delivery.
+            </Text>
+          </View>
+        </View> */}
+
         {/* Recent Recordings Section */}
         {totalRecordings > 0 ? (
           <View style={styles.recordingsSection}>
@@ -424,5 +437,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     opacity: 0.7,
+  },
+  aiInsightsBanner: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  bannerContent: {
+    gap: 8,
+  },
+  bannerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  bannerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bannerDescription: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
