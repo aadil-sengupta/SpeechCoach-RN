@@ -4,6 +4,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { RecordingMetadata, formatDuration } from '@/utils/recordingUtils';
 import { AVPlaybackStatus, ResizeMode, Video } from 'expo-av';
 import { BlurView } from 'expo-blur';
+import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
     Dimensions,
@@ -27,11 +28,24 @@ interface VideoPlayerModalProps {
 export default function VideoPlayerModal({ visible, recording, onClose }: VideoPlayerModalProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const router = useRouter();
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   if (!recording) return null;
+
+  const handleSelfAnalysis = () => {
+    try {
+      router.push({
+        pathname: '/self-analysis',
+        params: { recordingId: recording.id }
+      });
+      onClose(); // Close the modal when navigating
+    } catch (navError) {
+      console.error('Navigation error:', navError);
+    }
+  };
 
   const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
     setStatus(status);
@@ -180,23 +194,9 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
                     </Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Camera</Text>
-                    <Text style={styles.detailValue}>
-                      {recording.facing === 'front' ? 'Front' : 'Back'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.detailsRow}>
-                  <View style={styles.detailItem}>
                     <Text style={styles.detailLabel}>File Size</Text>
                     <Text style={styles.detailValue}>
                       {recording.fileSize ? `${(recording.fileSize / 1024 / 1024).toFixed(1)} MB` : 'Unknown'}
-                    </Text>
-                  </View>
-                  <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Storage</Text>
-                    <Text style={styles.detailValue}>
-                      {recording.photoLibraryUri ? 'Gallery + App' : 'App Only'}
                     </Text>
                   </View>
                 </View>
@@ -209,6 +209,22 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
                 </Text>
                 <Text style={styles.infoSubValue} numberOfLines={3}>
                   {recording.localUri}
+                </Text>
+              </View>
+
+              {/* Self-Analysis Button */}
+              <View style={styles.actionSection}>
+                <TouchableOpacity
+                  style={[styles.selfAnalysisButton, { backgroundColor: colors.tint, color: 'black' }]}
+                  onPress={handleSelfAnalysis}
+                  activeOpacity={0.8}
+                >
+                  <IconSymbol name="brain" size={20} color="white" />
+                  <Text style={styles.selfAnalysisButtonText}>Start Self-Analysis</Text>
+                  <IconSymbol name="arrow.right" size={16} color="white" />
+                </TouchableOpacity>
+                <Text style={styles.selfAnalysisDescription}>
+                  Review your recording with guided analysis tools and focus modes
                 </Text>
               </View>
             </View>
@@ -384,5 +400,33 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+  },
+  actionSection: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  selfAnalysisButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 12,
+    marginBottom: 12,
+  },
+  selfAnalysisButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  selfAnalysisDescription: {
+    color: 'white',
+    fontSize: 13,
+    opacity: 0.7,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

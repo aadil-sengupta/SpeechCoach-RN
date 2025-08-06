@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { RecordingMetadata, formatDuration, getRecordingMetadata } from '@/utils/recordingUtils';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
@@ -19,6 +20,7 @@ import {
 
 export default function DashboardScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [recordings, setRecordings] = useState<RecordingMetadata[]>([]);
@@ -111,17 +113,11 @@ export default function DashboardScreen() {
             </Text>
           </View>
           <View style={styles.recordingMeta}>
-            <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
-              Camera: {item.facing === 'front' ? 'Front' : 'Back'}
-            </Text>
             {item.fileSize && (
               <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
                 {(item.fileSize / 1024 / 1024).toFixed(1)} MB
               </Text>
             )}
-            <Text style={[styles.recordingDetail, { color: colors.text + '60' }]}>
-              {item.photoLibraryUri ? '📱 Saved' : '📁 Local'}
-            </Text>
           </View>
         </View>
       </View>

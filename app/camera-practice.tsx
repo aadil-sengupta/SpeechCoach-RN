@@ -304,10 +304,42 @@ export default function CameraPracticeScreen() {
           // Save metadata to local storage
           await saveRecordingMetadata(metadata);
           
+          // Ask user about self-analysis
           Alert.alert(
             'Recording Saved!', 
-            'Your practice session has been saved to your photo library and app storage.',
-            [{ text: 'OK', style: 'default' }]
+            'Your practice session has been saved to your photo library and app storage.\n\nWould you like to review your recording now for self-analysis? (AI analysis will be available later regardless of your choice)',
+            [
+              { 
+                text: 'Review Later', 
+                style: 'cancel',
+                onPress: () => {
+                  console.log('User chose to skip immediate self-analysis');
+                  Alert.alert(
+                    'Saved Successfully',
+                    'Your recording is saved. You can review it anytime from the Dashboard, and AI analysis will be processed automatically.',
+                    [{ text: 'OK' }]
+                  );
+                }
+              },
+              { 
+                text: 'Review Now', 
+                style: 'default',
+                onPress: () => {
+                  console.log('User chose to start immediate self-analysis');
+                  console.log('Recording ID:', recordingId);
+                  console.log('Navigating to:', `/self-analysis?recordingId=${recordingId}`);
+                  try {
+                    router.push({
+                      pathname: '/self-analysis',
+                      params: { recordingId }
+                    });
+                  } catch (navError) {
+                    console.error('Navigation error:', navError);
+                    Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+                  }
+                }
+              }
+            ]
           );
           
           console.log('Video saved to:', localUri);
@@ -318,20 +350,84 @@ export default function CameraPracticeScreen() {
           // Save metadata without photo library URI
           await saveRecordingMetadata(metadata);
           
+          // Ask user about self-analysis
           Alert.alert(
             'Recording Saved!', 
-            'Your practice session has been saved to app storage. Could not save to photo library.',
-            [{ text: 'OK', style: 'default' }]
+            'Your practice session has been saved to app storage. Could not save to photo library.\n\nWould you like to review your recording now for self-analysis? (AI analysis will be available later regardless of your choice)',
+            [
+              { 
+                text: 'Review Later', 
+                style: 'cancel',
+                onPress: () => {
+                  console.log('User chose to skip immediate self-analysis');
+                  Alert.alert(
+                    'Saved Successfully',
+                    'Your recording is saved. You can review it anytime from the Dashboard, and AI analysis will be processed automatically.',
+                    [{ text: 'OK' }]
+                  );
+                }
+              },
+              { 
+                text: 'Review Now', 
+                style: 'default',
+                onPress: () => {
+                  console.log('User chose to start immediate self-analysis');
+                  console.log('Recording ID:', recordingId);
+                  console.log('Navigating to:', `/self-analysis?recordingId=${recordingId}`);
+                  try {
+                    router.push({
+                      pathname: '/self-analysis',
+                      params: { recordingId }
+                    });
+                  } catch (navError) {
+                    console.error('Navigation error:', navError);
+                    Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+                  }
+                }
+              }
+            ]
           );
         }
       } else {
         // Save metadata without photo library URI
         await saveRecordingMetadata(metadata);
         
+        // Ask user about self-analysis
         Alert.alert(
           'Recording Saved!', 
-          'Your practice session has been saved to app storage.',
-          [{ text: 'OK', style: 'default' }]
+          'Your practice session has been saved to app storage.\n\nWould you like to review your recording now for self-analysis? (AI analysis will be available later regardless of your choice)',
+          [
+            { 
+              text: 'Review Later', 
+              style: 'cancel',
+              onPress: () => {
+                console.log('User chose to skip immediate self-analysis');
+                Alert.alert(
+                  'Saved Successfully',
+                  'Your recording is saved. You can review it anytime from the Dashboard, and AI analysis will be processed automatically.',
+                  [{ text: 'OK' }]
+                );
+              }
+            },
+            { 
+              text: 'Review Now', 
+              style: 'default',
+              onPress: () => {
+                console.log('User chose to start immediate self-analysis');
+                console.log('Recording ID:', recordingId);
+                console.log('Navigating to:', `/self-analysis?recordingId=${recordingId}`);
+                try {
+                  router.push({
+                    pathname: '/self-analysis',
+                    params: { recordingId }
+                  });
+                } catch (navError) {
+                  console.error('Navigation error:', navError);
+                  Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+                }
+              }
+            }
+          ]
         );
         
         console.log('Video saved to app storage:', localUri);
@@ -382,8 +478,7 @@ export default function CameraPracticeScreen() {
         const date = new Date(recording.createdAt).toLocaleString();
         const size = recording.fileSize ? `${(recording.fileSize / 1024 / 1024).toFixed(1)} MB` : 'Unknown';
         const duration = recording.duration ? formatDuration(recording.duration) : 'Unknown';
-        const photoLibrary = recording.photoLibraryUri ? 'Yes' : 'No';
-        return `${index + 1}. ${recording.fileName}\n   Date: ${date}\n   Duration: ${duration}\n   Size: ${size}\n   Camera: ${recording.facing}\n   In Photo Library: ${photoLibrary}`;
+        return `${index + 1}. ${recording.fileName}\n   Date: ${date}\n   Duration: ${duration}\n   Size: ${size}`;
       }).join('\n\n');
     
     Alert.alert(

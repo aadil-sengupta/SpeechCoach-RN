@@ -1,3 +1,4 @@
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -93,9 +94,9 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
               >
                 <LinearGradient
                   colors={[
-                    colors.tint,
-                    `${colors.tint}F0`,
-                    `${colors.tint}E0`
+                    '#FFFFFF',
+                    '#F8F8F8',
+                    '#F0F0F0'
                   ]}
                   style={styles.practiceGradient}
                   start={{ x: 0, y: 0 }}
@@ -103,7 +104,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                 >
                   {/* Inner highlight */}
                   <LinearGradient
-                    colors={['rgba(255,255,255,0.3)', 'transparent']}
+                    colors={['rgba(255,255,255,0.8)', 'transparent']}
                     style={styles.practiceHighlight}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 0.5 }}
@@ -111,11 +112,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                   
                   <View style={styles.practiceInner}>
                     <View style={styles.practiceIconContainer}>
-                      {descriptors[state.routes.find(r => r.name === 'practice')?.key || '']?.options?.tabBarIcon?.({
-                        focused: false,
-                        color: 'white',
-                        size: 26,
-                      })}
+                      <IconSymbol name="mic.fill" size={26} color="black" />
                     </View>
                   </View>
                 </LinearGradient>
