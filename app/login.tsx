@@ -96,7 +96,7 @@ export default function LoginScreen() {
                     <Text style={styles.inputIcon}>📧</Text>
                   </View>
                   <TextInput
-                    style={[styles.input, { color: colors.text }]}
+                    style={[styles.input, { color: '#000' }]}
                     placeholder="Enter your email"
                     placeholderTextColor={colors.textSecondary}
                     value={email}
@@ -112,7 +112,7 @@ export default function LoginScreen() {
                     <Text style={styles.inputIcon}>🔒</Text>
                   </View>
                   <TextInput
-                    style={[styles.input, { color: colors.text }]}
+                    style={[styles.input, { color: '#000' }]}
                     placeholder="Enter your password"
                     placeholderTextColor={colors.textSecondary}
                     value={password}

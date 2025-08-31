@@ -3,6 +3,7 @@ import { Audio } from 'expo-av';
 import { CameraType } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import * as VideoThumbnails from 'expo-video-thumbnails';
+import { AnalysisResponse } from './speechAnalysis';
 
 // Interface for recording metadata
 export interface RecordingMetadata {
@@ -19,6 +20,10 @@ export interface RecordingMetadata {
   recordedDate: string;
   fileSize?: number;
   observations?: string;
+  // AI Analysis fields
+  aiAnalysis?: AnalysisResponse;
+  analysisStatus?: 'pending' | 'completed' | 'failed' | 'not_requested';
+  analysisMode?: 'general' | 'interview' | 'sales' | 'pitch';
 }
 
 // Constants for AsyncStorage
@@ -195,5 +200,72 @@ export const updateRecordingObservations = async (recordingId: string, observati
     console.log('Recording observations updated for:', recordingId);
   } catch (error) {
     console.error('Error updating recording observations:', error);
+  }
+};
+
+// AI Analysis utility functions
+export const updateRecordingAnalysisStatus = async (
+  recordingId: string, 
+  status: 'pending' | 'completed' | 'failed' | 'not_requested',
+  mode?: 'general' | 'interview' | 'sales' | 'pitch'
+): Promise<void> => {
+  try {
+    const existingRecordings = await getRecordingMetadata();
+    const updatedRecordings = existingRecordings.map(recording => 
+      recording.id === recordingId 
+        ? { 
+            ...recording, 
+            analysisStatus: status,
+            ...(mode && { analysisMode: mode })
+          }
+        : recording
+    );
+    await AsyncStorage.setItem(RECORDINGS_STORAGE_KEY, JSON.stringify(updatedRecordings));
+    console.log('Recording analysis status updated for:', recordingId, 'Status:', status);
+  } catch (error) {
+    console.error('Error updating recording analysis status:', error);
+  }
+};
+
+export const saveAnalysisToRecording = async (
+  recordingId: string,
+  analysis: AnalysisResponse
+): Promise<void> => {
+  try {
+    const existingRecordings = await getRecordingMetadata();
+    const updatedRecordings = existingRecordings.map(recording => 
+      recording.id === recordingId 
+        ? { 
+            ...recording, 
+            aiAnalysis: analysis,
+            analysisStatus: 'completed' as const
+          }
+        : recording
+    );
+    await AsyncStorage.setItem(RECORDINGS_STORAGE_KEY, JSON.stringify(updatedRecordings));
+    console.log('AI analysis saved for recording:', recordingId);
+  } catch (error) {
+    console.error('Error saving AI analysis:', error);
+    throw error;
+  }
+};
+
+export const getRecordingById = async (recordingId: string): Promise<RecordingMetadata | null> => {
+  try {
+    const recordings = await getRecordingMetadata();
+    return recordings.find(recording => recording.id === recordingId) || null;
+  } catch (error) {
+    console.error('Error getting recording by ID:', error);
+    return null;
+  }
+};
+
+export const getAnalysisForRecording = async (recordingId: string): Promise<AnalysisResponse | null> => {
+  try {
+    const recording = await getRecordingById(recordingId);
+    return recording?.aiAnalysis || null;
+  } catch (error) {
+    console.error('Error getting analysis for recording:', error);
+    return null;
   }
 };

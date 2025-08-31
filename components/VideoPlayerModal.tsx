@@ -5,8 +5,9 @@ import { RecordingMetadata, formatDuration } from '@/utils/recordingUtils';
 import { AVPlaybackStatus, ResizeMode, Video } from 'expo-av';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Modal,
   SafeAreaView,
@@ -32,8 +33,21 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasEnded, setHasEnded] = useState(false);
+
+  // Reset hasEnded state when modal visibility or recording changes
+  useEffect(() => {
+    if (visible && recording) {
+      setHasEnded(false);
+    }
+  }, [visible, recording?.id]);
 
   if (!recording) return null;
+
+  const handleGoHome = () => {
+    onClose(); // Close the modal first
+    router.push('/'); // Navigate to home page
+  };
 
   const handleSelfAnalysis = () => {
     try {
@@ -51,6 +65,30 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
     setStatus(status);
     if (status.isLoaded) {
       setIsPlaying(status.isPlaying);
+      
+      // Check if the recording has ended
+      if (status.didJustFinish && !hasEnded) {
+        setHasEnded(true);
+        Alert.alert(
+          '🎉 Recording Complete!',
+          'Great job on completing your practice session! Would you like to go back to the home page or analyze this recording?',
+          [
+            {
+              text: 'Go to Home',
+              onPress: handleGoHome,
+              style: 'default'
+            },
+            {
+              text: 'Analyze Recording',
+              onPress: handleSelfAnalysis,
+              style: 'default'
+            }
+          ],
+          { 
+            cancelable: false // Prevent dismissing without choosing an option
+          }
+        );
+      }
     }
   };
 
@@ -66,6 +104,7 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
 
   const handleRestart = () => {
     if (videoRef.current) {
+      setHasEnded(false); // Reset the ended state when restarting
       videoRef.current.replayAsync();
     }
   };
@@ -224,7 +263,7 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
                 </View>
               )}
 
-              {/* Self-Analysis Button */}
+              {/* Analysis Button */}
               <View style={styles.actionSection}>
                 <TouchableOpacity
                   style={[styles.selfAnalysisButton, { backgroundColor: colors.tint }]}
@@ -232,7 +271,7 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
                   activeOpacity={0.8}
                 >
                   <IconSymbol name="brain" size={20} color="white" />
-                  <Text style={styles.selfAnalysisButtonText}>Start Self-Analysis</Text>
+                  <Text style={styles.selfAnalysisButtonText}>Start Analysis</Text>
                   <IconSymbol name="arrow.right" size={16} color="white" />
                 </TouchableOpacity>
                 <Text style={styles.selfAnalysisDescription}>

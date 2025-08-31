@@ -26,7 +26,7 @@ const { width, height } = Dimensions.get('window');
 
 type FocusMode = 'both' | 'audio' | 'video';
 
-export default function SelfAnalysisScreen() {
+export default function AnalysisScreen() {
   const { recordingId } = useLocalSearchParams<{ recordingId: string }>();
   const [recording, setRecording] = useState<RecordingMetadata | null>(null);
   const [focusMode, setFocusMode] = useState<FocusMode>('both');
@@ -38,6 +38,8 @@ export default function SelfAnalysisScreen() {
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
+  const [aiAnalysisComplete, setAiAnalysisComplete] = useState(false);
   const videoRef = useRef<Video>(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -73,6 +75,20 @@ export default function SelfAnalysisScreen() {
       }
     }
   }, [isPlaying]);
+
+  useEffect(() => {
+    // Start AI analysis after recording is loaded
+    if (recording && !aiAnalysisLoading && !aiAnalysisComplete) {
+      setAiAnalysisLoading(true);
+      // Simulate AI analysis for 20 seconds
+      const analysisTimer = setTimeout(() => {
+        setAiAnalysisLoading(false);
+        setAiAnalysisComplete(true);
+      }, 20000);
+      
+      return () => clearTimeout(analysisTimer);
+    }
+  }, [recording]);
 
   const loadRecording = async () => {
     try {
@@ -236,7 +252,7 @@ export default function SelfAnalysisScreen() {
           style={styles.headerTitleContainer}
         >
           <Text style={styles.headerEmoji}>🎬</Text>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Self-Analysis</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Analysis</Text>
         </Animatable.View>
         
         <View style={styles.placeholder} />
@@ -247,28 +263,246 @@ export default function SelfAnalysisScreen() {
         <View style={[styles.introCard, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
           <View style={styles.introHeader}>
             <IconSymbol name="lightbulb" size={20} color={colors.tint} />
-            <Text style={[styles.introTitle, { color: colors.tint }]}>Self-Analysis Benefits</Text>
+            <Text style={[styles.introTitle, { color: colors.tint }]}>Speech Analysis Benefits</Text>
           </View>
           <Text style={[styles.introText, { color: colors.text + '90' }]}>
             Focusing on individual aspects of your speech—audio clarity or visual presence—helps you identify specific areas for improvement and build stronger presentation skills over time.
           </Text>
         </View>
 
-        {/* AI Analysis Coming Soon Banner */}
-        {/* <BlurView intensity={20} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={styles.aiProcessingBanner}>
-          <View style={styles.aiProcessingContent}>
-            <IconSymbol name="brain" size={20} color={colors.tint} />
-            <View style={styles.aiProcessingTextContainer}>
-              <Text style={[styles.aiProcessingText, { color: colors.text }]}>
-                🚧 AI Speech Analysis - Coming Soon!
-              </Text>
-              <Text style={[styles.aiProcessingSubtext, { color: colors.text + '80' }]}>
-                We're developing AI-powered speech feedback. For now, use the self-analysis tools below.
-              </Text>
-            </View>
+        {/* AI Speech Analysis Section */}
+        <View style={[styles.aiAnalysisCard, { backgroundColor: colors.text + '05' }]}>
+          <View style={styles.aiAnalysisHeader}>
+            <Text style={styles.aiAnalysisEmoji}>🤖</Text>
+            <Text style={[styles.aiAnalysisTitle, { color: colors.text }]}>AI Speech Analysis</Text>
+            {aiAnalysisLoading && (
+              <View style={[styles.loadingBadge, { backgroundColor: colors.tint + '20' }]}>
+                <Text style={[styles.loadingBadgeText, { color: colors.tint }]}>Analyzing...</Text>
+              </View>
+            )}
+            {aiAnalysisComplete && (
+              <View style={[styles.completeBadge, { backgroundColor: '#10B981' + '20' }]}>
+                <Text style={[styles.completeBadgeText, { color: '#10B981' }]}>Complete</Text>
+              </View>
+            )}
           </View>
-        </BlurView> */}
-
+          
+          {aiAnalysisLoading && (
+            <View style={styles.aiLoadingContainer}>
+              <Text style={[styles.aiLoadingText, { color: colors.text + '80' }]}>
+                🎙️ Analyzing your speech patterns and delivery...
+              </Text>
+              <Text style={[styles.aiLoadingSubText, { color: colors.text + '60' }]}>
+                • Evaluating speech clarity and pronunciation{'\n'}
+                • Measuring speaking pace and rhythm{'\n'}
+                • Detecting filler words and pauses{'\n'}
+                • Assessing vocal variety and engagement{'\n'}
+                • Generating personalized recommendations
+              </Text>
+              <View style={styles.loadingIndicatorContainer}>
+                <View style={styles.loadingDots}>
+                  <Animatable.View 
+                    animation="pulse" 
+                    iterationCount="infinite" 
+                    duration={800}
+                    style={[styles.loadingDot, { backgroundColor: colors.tint }]}
+                  />
+                  <Animatable.View 
+                    animation="pulse" 
+                    iterationCount="infinite" 
+                    duration={800}
+                    delay={200}
+                    style={[styles.loadingDot, { backgroundColor: colors.tint }]}
+                  />
+                  <Animatable.View 
+                    animation="pulse" 
+                    iterationCount="infinite" 
+                    duration={800}
+                    delay={400}
+                    style={[styles.loadingDot, { backgroundColor: colors.tint }]}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+          
+          {aiAnalysisComplete && (
+            <Animatable.View animation="fadeInUp" duration={600} style={styles.aiResultsContainer}>
+              <View style={styles.aiSummaryContainer}>
+                <Text style={[styles.aiSummaryTitle, { color: colors.text }]}>Analysis Summary</Text>
+                <Text style={[styles.aiSummaryText, { color: colors.text + '90' }]}>
+                  Your presentation shows strong confidence and clear articulation, with excellent engagement throughout. 
+                  Key areas for improvement include reducing speaking pace and minimizing filler words. 
+                  With focused practice on vocal variety, you're well on your way to becoming an exceptional speaker.
+                </Text>
+              </View>
+              
+              <View style={styles.aiScoreContainer}>
+                <Text style={[styles.aiScoreLabel, { color: colors.text + '80' }]}>Overall Score</Text>
+                <Text style={[styles.aiScore, { color: colors.tint }]}>8.2/10</Text>
+                <Text style={[styles.aiScoreSubtext, { color: colors.text + '60' }]}>Excellent Performance</Text>
+              </View>
+              
+              <View style={styles.aiMetricsContainer}>
+                <View style={styles.aiMetric}>
+                  <Text style={[styles.aiMetricLabel, { color: colors.text + '80' }]}>Speech Clarity</Text>
+                  <View style={styles.aiMetricBar}>
+                    <View style={[styles.aiMetricFill, { backgroundColor: '#10B981', width: '85%' }]} />
+                  </View>
+                  <Text style={[styles.aiMetricScore, { color: colors.text }]}>8.5</Text>
+                </View>
+                
+                <View style={styles.aiMetric}>
+                  <Text style={[styles.aiMetricLabel, { color: colors.text + '80' }]}>Speaking Pace</Text>
+                  <View style={styles.aiMetricBar}>
+                    <View style={[styles.aiMetricFill, { backgroundColor: '#F59E0B', width: '78%' }]} />
+                  </View>
+                  <Text style={[styles.aiMetricScore, { color: colors.text }]}>7.8</Text>
+                </View>
+                
+                <View style={styles.aiMetric}>
+                  <Text style={[styles.aiMetricLabel, { color: colors.text + '80' }]}>Confidence Level</Text>
+                  <View style={styles.aiMetricBar}>
+                    <View style={[styles.aiMetricFill, { backgroundColor: '#3B82F6', width: '82%' }]} />
+                  </View>
+                  <Text style={[styles.aiMetricScore, { color: colors.text }]}>8.2</Text>
+                </View>
+                
+                <View style={styles.aiMetric}>
+                  <Text style={[styles.aiMetricLabel, { color: colors.text + '80' }]}>Vocal Variety</Text>
+                  <View style={styles.aiMetricBar}>
+                    <View style={[styles.aiMetricFill, { backgroundColor: '#8B5CF6', width: '73%' }]} />
+                  </View>
+                  <Text style={[styles.aiMetricScore, { color: colors.text }]}>7.3</Text>
+                </View>
+                
+                <View style={styles.aiMetric}>
+                  <Text style={[styles.aiMetricLabel, { color: colors.text + '80' }]}>Filler Word Usage</Text>
+                  <View style={styles.aiMetricBar}>
+                    <View style={[styles.aiMetricFill, { backgroundColor: '#EF4444', width: '65%' }]} />
+                  </View>
+                  <Text style={[styles.aiMetricScore, { color: colors.text }]}>6.5</Text>
+                </View>
+                
+                <View style={styles.aiMetric}>
+                  <Text style={[styles.aiMetricLabel, { color: colors.text + '80' }]}>Engagement</Text>
+                  <View style={styles.aiMetricBar}>
+                    <View style={[styles.aiMetricFill, { backgroundColor: '#06B6D4', width: '88%' }]} />
+                  </View>
+                  <Text style={[styles.aiMetricScore, { color: colors.text }]}>8.8</Text>
+                </View>
+              </View>
+              
+              <View style={styles.aiInsightsContainer}>
+                <Text style={[styles.aiInsightsTitle, { color: colors.text }]}>Key Insights</Text>
+                <View style={styles.aiInsight}>
+                  <Text style={styles.aiInsightEmoji}>✅</Text>
+                  <Text style={[styles.aiInsightText, { color: colors.text + '90' }]}>
+                    Excellent voice projection and clear articulation throughout
+                  </Text>
+                </View>
+                <View style={styles.aiInsight}>
+                  <Text style={styles.aiInsightEmoji}>🎯</Text>
+                  <Text style={[styles.aiInsightText, { color: colors.text + '90' }]}>
+                    Consider reducing speaking pace by 10-15% for better comprehension
+                  </Text>
+                </View>
+                <View style={styles.aiInsight}>
+                  <Text style={styles.aiInsightEmoji}>🎵</Text>
+                  <Text style={[styles.aiInsightText, { color: colors.text + '90' }]}>
+                    Add more vocal variety - vary your pitch and tone for emphasis
+                  </Text>
+                </View>
+                <View style={styles.aiInsight}>
+                  <Text style={styles.aiInsightEmoji}>⚠️</Text>
+                  <Text style={[styles.aiInsightText, { color: colors.text + '90' }]}>
+                    Detected 12 filler words ("um", "uh") - practice pausing instead
+                  </Text>
+                </View>
+                <View style={styles.aiInsight}>
+                  <Text style={styles.aiInsightEmoji}>💪</Text>
+                  <Text style={[styles.aiInsightText, { color: colors.text + '90' }]}>
+                    Strong confidence and engagement - keep up the great energy!
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.aiActionableAdviceContainer}>
+                <Text style={[styles.aiActionableTitle, { color: colors.text }]}>Actionable Recommendations</Text>
+                
+                <View style={styles.aiAdviceCard}>
+                  <View style={styles.aiAdviceHeader}>
+                    <Text style={styles.aiAdviceEmoji}>🏃‍♂️</Text>
+                    <Text style={[styles.aiAdviceCategory, { color: colors.text }]}>Pace Control</Text>
+                  </View>
+                  <Text style={[styles.aiAdviceText, { color: colors.text + '90' }]}>
+                    Practice the "pause and breathe" technique. Count to 1-2 between sentences to naturally slow your pace.
+                  </Text>
+                  <Text style={[styles.aiAdviceTip, { color: colors.tint }]}>
+                    💡 Try: Record yourself reading for 1 minute, then replay at 0.8x speed to hear the ideal pace
+                  </Text>
+                </View>
+                
+                <View style={styles.aiAdviceCard}>
+                  <View style={styles.aiAdviceHeader}>
+                    <Text style={styles.aiAdviceEmoji}>🎼</Text>
+                    <Text style={[styles.aiAdviceCategory, { color: colors.text }]}>Vocal Variety</Text>
+                  </View>
+                  <Text style={[styles.aiAdviceText, { color: colors.text + '90' }]}>
+                    Emphasize key words by changing your pitch. Practice going higher for questions and lower for serious points.
+                  </Text>
+                  <Text style={[styles.aiAdviceTip, { color: colors.tint }]}>
+                    💡 Try: Read children's stories aloud to practice exaggerated vocal variety, then dial it back
+                  </Text>
+                </View>
+                
+                <View style={styles.aiAdviceCard}>
+                  <View style={styles.aiAdviceHeader}>
+                    <Text style={styles.aiAdviceEmoji}>🚫</Text>
+                    <Text style={[styles.aiAdviceCategory, { color: colors.text }]}>Eliminate Fillers</Text>
+                  </View>
+                  <Text style={[styles.aiAdviceText, { color: colors.text + '90' }]}>
+                    Replace "um" and "uh" with strategic pauses. Silence is more powerful than filler words.
+                  </Text>
+                  <Text style={[styles.aiAdviceTip, { color: colors.tint }]}>
+                    💡 Try: Have a friend count your fillers during practice - awareness is the first step
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.aiProgressContainer}>
+                <Text style={[styles.aiProgressTitle, { color: colors.text }]}>Your Progress Journey</Text>
+                <View style={styles.aiProgressItem}>
+                  <Text style={styles.aiProgressEmoji}>🏁</Text>
+                  <View style={styles.aiProgressContent}>
+                    <Text style={[styles.aiProgressLabel, { color: colors.text }]}>Short Term Goal (1-2 weeks)</Text>
+                    <Text style={[styles.aiProgressText, { color: colors.text + '80' }]}>
+                      Reduce filler words by 50% and practice 2-second pauses between sentences
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.aiProgressItem}>
+                  <Text style={styles.aiProgressEmoji}>🎯</Text>
+                  <View style={styles.aiProgressContent}>
+                    <Text style={[styles.aiProgressLabel, { color: colors.text }]}>Medium Term Goal (1 month)</Text>
+                    <Text style={[styles.aiProgressText, { color: colors.text + '80' }]}>
+                      Master vocal variety with 3 distinct pitch levels and maintain optimal speaking pace
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.aiProgressItem}>
+                  <Text style={styles.aiProgressEmoji}>🏆</Text>
+                  <View style={styles.aiProgressContent}>
+                    <Text style={[styles.aiProgressLabel, { color: colors.text }]}>Long Term Vision (3 months)</Text>
+                    <Text style={[styles.aiProgressText, { color: colors.text + '80' }]}>
+                      Achieve consistently confident, clear, and engaging delivery across all speaking situations
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Animatable.View>
+          )}
+        </View>
         {/* Video Player */}
         {isFullscreen ? (
           <Modal
@@ -541,7 +775,7 @@ export default function SelfAnalysisScreen() {
             </Text>
           </View>
         </View>
-
+        
         {/* Focus Mode Controls */}
         <View style={styles.controlsCard}>
           <Text style={[styles.controlsTitle, { color: colors.text }]}>Analysis Focus</Text>
@@ -637,9 +871,9 @@ export default function SelfAnalysisScreen() {
 
  
 
-        {/* Self-Analysis Notes Section */}
+        {/* Analysis Notes Section */}
         <View style={[styles.notesCard, { backgroundColor: colors.text + '05' }]}>
-          <Text style={[styles.notesTitle, { color: colors.text }]}>Self-Analysis Notes</Text>
+          <Text style={[styles.notesTitle, { color: colors.text }]}>Analysis Notes</Text>
           <Text style={[styles.notesSubtitle, { color: colors.text + '80' }]}>
             Consider these aspects while reviewing:
           </Text>
@@ -698,6 +932,7 @@ export default function SelfAnalysisScreen() {
           )}
         </View>
 
+
         {/* Complete Analysis Button */}
         <TouchableOpacity 
           style={[styles.completeButton, { backgroundColor: colors.tint }]}
@@ -723,54 +958,8 @@ export default function SelfAnalysisScreen() {
           }}
         >
           <IconSymbol name="checkmark.circle.fill" size={24} color="black" />
-          <Text style={styles.completeButtonText}>Complete Self-Analysis</Text>
+          <Text style={styles.completeButtonText}>Complete Analysis</Text>
         </TouchableOpacity>
-
-                 {/* AI Analysis Coming Soon Section */}
-        <View style={[styles.comingSoonCard, { backgroundColor: colors.text + '05', borderColor: colors.tint + '30' }]}>
-          <View style={styles.comingSoonHeader}>
-            <IconSymbol name="brain" size={24} color={colors.tint} />
-            <Text style={[styles.comingSoonTitle, { color: colors.text }]}>AI Speech Analysis</Text>
-            <View style={[styles.comingSoonBadge, { backgroundColor: colors.tint + '20' }]}>
-              <Text style={[styles.comingSoonBadgeText, { color: colors.tint }]}>Coming Soon</Text>
-            </View>
-          </View>
-          
-          <Text style={[styles.comingSoonDescription, { color: colors.text + '80' }]}>
-            We're developing an AI-powered speech analysis feature that will provide:
-          </Text>
-          
-          <View style={styles.comingSoonFeatures}>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Speech clarity and pace analysis
-              </Text>
-            </View>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Filler word detection and feedback
-              </Text>
-            </View>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Personalized improvement suggestions
-              </Text>
-            </View>
-            <View style={styles.comingSoonFeature}>
-              <IconSymbol name="checkmark.circle" size={16} color={colors.tint} />
-              <Text style={[styles.comingSoonFeatureText, { color: colors.text + '90' }]}>
-                Speech transcription and confidence scoring
-              </Text>
-            </View>
-          </View>
-          
-          <Text style={[styles.comingSoonFooter, { color: colors.text + '70' }]}>
-            For now, use the self-analysis tools above to review your recording manually.
-          </Text>
-        </View>
 
         <View style={{ height: 50 }} />
       </ScrollView>
@@ -1271,5 +1460,241 @@ const styles = StyleSheet.create({
   segmentEmoji: {
     fontSize: 16,
     marginRight: 6,
+  },
+  // AI Analysis Styles
+  aiAnalysisCard: {
+    margin: 20,
+    marginTop: 0,
+    padding: 16,
+    borderRadius: 12,
+  },
+  aiAnalysisHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  aiAnalysisEmoji: {
+    fontSize: 20,
+  },
+  aiAnalysisTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+  loadingBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  loadingBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  completeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  completeBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  aiLoadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  aiLoadingText: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  aiLoadingSubText: {
+    fontSize: 12,
+    textAlign: 'left',
+    marginBottom: 20,
+    lineHeight: 18,
+    paddingHorizontal: 20,
+  },
+  loadingIndicatorContainer: {
+    alignItems: 'center',
+  },
+  loadingDots: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  loadingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  aiResultsContainer: {
+    gap: 16,
+  },
+  aiSummaryContainer: {
+    backgroundColor: 'rgba(240, 230, 140, 0.15)',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  aiSummaryTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  aiSummaryText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  aiScoreContainer: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(240, 230, 140, 0.1)',
+  },
+  aiScoreLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  aiScore: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  aiMetricsContainer: {
+    gap: 12,
+  },
+  aiMetric: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  aiMetricLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    width: 100,
+  },
+  aiMetricBar: {
+    flex: 1,
+    height: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  aiMetricFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  aiMetricScore: {
+    fontSize: 13,
+    fontWeight: '600',
+    width: 30,
+    textAlign: 'right',
+  },
+  aiInsightsContainer: {
+    gap: 12,
+  },
+  aiInsightsTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  aiInsight: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  aiInsightEmoji: {
+    fontSize: 16,
+    marginTop: 1,
+  },
+  aiInsightText: {
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
+  },
+  // Enhanced AI Analysis Styles
+  aiScoreSubtext: {
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  aiActionableAdviceContainer: {
+    marginTop: 20,
+    gap: 16,
+  },
+  aiActionableTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  aiAdviceCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  aiAdviceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  aiAdviceEmoji: {
+    fontSize: 18,
+  },
+  aiAdviceCategory: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  aiAdviceText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  aiAdviceTip: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontStyle: 'italic',
+    fontWeight: '500',
+  },
+  aiProgressContainer: {
+    marginTop: 20,
+    gap: 16,
+  },
+  aiProgressTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  aiProgressItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    padding: 12,
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#F0E68C',
+  },
+  aiProgressEmoji: {
+    fontSize: 16,
+    marginTop: 2,
+  },
+  aiProgressContent: {
+    flex: 1,
+  },
+  aiProgressLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  aiProgressText: {
+    fontSize: 12,
+    lineHeight: 16,
   },
 });

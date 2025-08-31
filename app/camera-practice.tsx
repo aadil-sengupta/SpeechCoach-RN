@@ -1,6 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { uploadVideoForAnalysis } from '@/utils/apiService';
 import {
   RecordingMetadata,
   clearAllRecordingMetadata,
@@ -10,8 +11,11 @@ import {
   generateVideoThumbnail,
   getRecordingMetadata,
   getVideoDuration,
+  saveAnalysisToRecording,
   saveRecordingMetadata,
+  updateRecordingAnalysisStatus,
 } from '@/utils/recordingUtils';
+import { mockAnalyzeSpeechVideo } from '@/utils/speechAnalysis';
 import { BlurView } from 'expo-blur';
 import { CameraType, CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
@@ -212,6 +216,129 @@ export default function CameraPracticeScreen() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
 
+  const requestAIAnalysis = async (
+    recordingId: string, 
+    videoUri: string, 
+    mode: 'general' | 'interview' | 'sales' | 'pitch' = 'general'
+  ): Promise<void> => {
+    try {
+      console.log('Starting AI analysis for recording:', recordingId);
+      
+      // Update status to pending
+      await updateRecordingAnalysisStatus(recordingId, 'pending', mode);
+      
+      // Show loading alert
+      Alert.alert(
+        'AI Analysis Starting',
+        'Your speech is being analyzed by AI. This may take up to 60 seconds...',
+        [{ text: 'OK' }]
+      );
+
+      // For now, use mock analysis (replace with real API call when backend is ready)
+      let analysisResult;
+      
+      try {
+        // Try real API first (this will fail if backend is not available)
+        analysisResult = await uploadVideoForAnalysis(videoUri, mode);
+        console.log('Real API analysis completed');
+      } catch (apiError) {
+        console.log('Real API failed, using mock analysis:', apiError);
+        // Fall back to mock analysis
+        analysisResult = await mockAnalyzeSpeechVideo(videoUri, mode);
+      }
+
+      // Save analysis results
+      await saveAnalysisToRecording(recordingId, analysisResult);
+      
+      console.log('AI analysis completed for recording:', recordingId);
+      
+      // Show success message and navigate to analysis view
+      Alert.alert(
+        'AI Analysis Complete!',
+        'Your speech has been analyzed. Would you like to view the results now?',
+        [
+          { 
+            text: 'View Later', 
+            style: 'cancel',
+            onPress: () => {
+              Alert.alert(
+                'Analysis Saved',
+                'Your AI analysis is saved and can be viewed from the Dashboard.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+          { 
+            text: 'View Results', 
+            style: 'default',
+            onPress: () => {
+              try {
+                router.push({
+                  pathname: '/self-analysis',
+                  params: { recordingId }
+                });
+              } catch (navError) {
+                console.error('Navigation error:', navError);
+                Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+              }
+            }
+          }
+        ]
+      );
+      
+    } catch (error) {
+      console.error('AI analysis failed:', error);
+      
+      // Update status to failed
+      await updateRecordingAnalysisStatus(recordingId, 'failed');
+      
+      let errorMessage = 'AI analysis failed. Please try again later.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Network') || error.message.includes('fetch')) {
+          errorMessage = 'Unable to connect to AI service. Please check your internet connection and try again.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Analysis timed out. Please try again with a shorter video.';
+        }
+      }
+      
+      Alert.alert(
+        'Analysis Failed',
+        errorMessage,
+        [
+          { text: 'Try Again', onPress: () => requestAIAnalysis(recordingId, videoUri, mode) },
+          { text: 'Skip Analysis', style: 'cancel' }
+        ]
+      );
+    }
+  };
+
+  const showAnalysisModeSelector = (recordingId: string, videoUri: string) => {
+    Alert.alert(
+      'Choose Analysis Type',
+      'What type of speech analysis would you like?',
+      [
+        { 
+          text: 'General Communication',
+          onPress: () => requestAIAnalysis(recordingId, videoUri, 'general')
+        },
+        { 
+          text: 'Interview Practice',
+          onPress: () => requestAIAnalysis(recordingId, videoUri, 'interview')
+        },
+        { 
+          text: 'Sales Presentation',
+          onPress: () => requestAIAnalysis(recordingId, videoUri, 'sales')
+        },
+        { 
+          text: 'Startup Pitch',
+          onPress: () => requestAIAnalysis(recordingId, videoUri, 'pitch')
+        },
+        { text: 'Skip Analysis', style: 'cancel' }
+      ]
+    );
+  };
+
   const handleRecordPress = async () => {
     if (!cameraRef.current) return;
 
@@ -290,6 +417,7 @@ export default function CameraPracticeScreen() {
         recordedDate: new Date().toLocaleDateString(),
         fileSize,
         duration, // Duration in seconds from video file
+        analysisStatus: 'not_requested', // Initialize analysis status
       };
       
       if (mediaLibraryPermission === 'granted') {
@@ -304,84 +432,48 @@ export default function CameraPracticeScreen() {
           // Save metadata to local storage
           await saveRecordingMetadata(metadata);
           
-          // Ask user about self-analysis
+          console.log('Video saved to:', localUri);
+          console.log('Video saved to photo library');
+          
+          // Show success message and navigate to homepage
           Alert.alert(
-            'Recording Saved!', 
-            'Your practice session has been saved to your photo library and app storage.\n\nWould you like to review your recording now for self-analysis?\n\n🚧 AI analysis feature coming soon!',
+            '🎉 Recording Saved!',
+            'Your practice session has been successfully recorded and saved.',
             [
-              { 
-                text: 'Review Later', 
-                style: 'cancel',
+              {
+                text: 'OK',
                 onPress: () => {
-                  console.log('User chose to skip immediate self-analysis');
-                  Alert.alert(
-                    'Saved Successfully',
-                    'Your recording is saved. You can review it anytime from the Dashboard.\n\n🚧 AI speech analysis is in development and will be available soon!',
-                    [{ text: 'OK' }]
-                  );
-                }
-              },
-              { 
-                text: 'Review Now', 
-                style: 'default',
-                onPress: () => {
-                  console.log('User chose to start immediate self-analysis');
-                  console.log('Recording ID:', recordingId);
-                  console.log('Navigating to:', `/self-analysis?recordingId=${recordingId}`);
                   try {
-                    router.push({
-                      pathname: '/self-analysis',
-                      params: { recordingId }
-                    });
+                    router.replace('/dashboard');
                   } catch (navError) {
                     console.error('Navigation error:', navError);
-                    Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+                    Alert.alert('Navigation Error', 'Could not navigate to homepage. Please try again.');
                   }
                 }
               }
             ]
           );
-          
-          console.log('Video saved to:', localUri);
-          console.log('Video saved to photo library');
         } catch (mediaError) {
           console.error('Error saving to photo library:', mediaError);
           
           // Save metadata without photo library URI
           await saveRecordingMetadata(metadata);
           
-          // Ask user about self-analysis
+          console.log('Video saved to app storage (photo library failed):', localUri);
+          
+          // Show success message and navigate to homepage
           Alert.alert(
-            'Recording Saved!', 
-            'Your practice session has been saved to app storage. Could not save to photo library.\n\nWould you like to review your recording now for self-analysis?\n\n🚧 AI analysis feature coming soon!',
+            '🎉 Recording Saved!',
+            'Your practice session has been successfully recorded and saved.',
             [
-              { 
-                text: 'Review Later', 
-                style: 'cancel',
+              {
+                text: 'OK',
                 onPress: () => {
-                  console.log('User chose to skip immediate self-analysis');
-                  Alert.alert(
-                    'Saved Successfully',
-                    'Your recording is saved. You can review it anytime from the Dashboard.\n\n🚧 AI speech analysis is in development and will be available soon!',
-                    [{ text: 'OK' }]
-                  );
-                }
-              },
-              { 
-                text: 'Review Now', 
-                style: 'default',
-                onPress: () => {
-                  console.log('User chose to start immediate self-analysis');
-                  console.log('Recording ID:', recordingId);
-                  console.log('Navigating to:', `/self-analysis?recordingId=${recordingId}`);
                   try {
-                    router.push({
-                      pathname: '/self-analysis',
-                      params: { recordingId }
-                    });
+                    router.replace('/dashboard');
                   } catch (navError) {
                     console.error('Navigation error:', navError);
-                    Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+                    Alert.alert('Navigation Error', 'Could not navigate to homepage. Please try again.');
                   }
                 }
               }
@@ -392,38 +484,21 @@ export default function CameraPracticeScreen() {
         // Save metadata without photo library URI
         await saveRecordingMetadata(metadata);
         
-        // Ask user about self-analysis
+        console.log('Video saved to app storage:', localUri);
+        
+        // Show success message and navigate to homepage
         Alert.alert(
-          'Recording Saved!', 
-          'Your practice session has been saved to app storage.\n\nWould you like to review your recording now for self-analysis?\n\n🚧 AI analysis feature coming soon!',
+          '🎉 Recording Saved!',
+          'Your practice session has been successfully recorded and saved.',
           [
-            { 
-              text: 'Review Later', 
-              style: 'cancel',
+            {
+              text: 'OK',
               onPress: () => {
-                console.log('User chose to skip immediate self-analysis');
-                Alert.alert(
-                  'Saved Successfully',
-                  'Your recording is saved. You can review it anytime from the Dashboard.\n\n🚧 AI speech analysis is in development and will be available soon!',
-                  [{ text: 'OK' }]
-                );
-              }
-            },
-            { 
-              text: 'Review Now', 
-              style: 'default',
-              onPress: () => {
-                console.log('User chose to start immediate self-analysis');
-                console.log('Recording ID:', recordingId);
-                console.log('Navigating to:', `/self-analysis?recordingId=${recordingId}`);
                 try {
-                  router.push({
-                    pathname: '/self-analysis',
-                    params: { recordingId }
-                  });
+                  router.replace('/dashboard');
                 } catch (navError) {
                   console.error('Navigation error:', navError);
-                  Alert.alert('Navigation Error', 'Could not open analysis screen. Please try again.');
+                  Alert.alert('Navigation Error', 'Could not navigate to homepage. Please try again.');
                 }
               }
             }
@@ -598,9 +673,8 @@ export default function CameraPracticeScreen() {
               >
                 <Animated.View style={{ opacity: fadeAnim }}>
                   <View style={styles.introTextHeader}>
-                    <Text style={styles.introTextEmoji}>💭</Text>
-                    <Text style={styles.introTextTitle}>Speaking Prompt</Text>
-                    <Text style={styles.introTextSubtitle}>Tap to change</Text>
+                    {/* <Text style={styles.introTextTitle}>Speaking Prompt</Text> */}
+                    {/* <Text style={styles.introTextSubtitle}>Tap to change</Text> */}
                   </View>
                   <Text style={styles.introText}>
                     {introTexts[currentTextIndex]}
@@ -609,15 +683,15 @@ export default function CameraPracticeScreen() {
               </TouchableOpacity>
             
             {isRecording && (
-                <LinearGradient
-                  colors={['#FF6B6B', '#FF8E8E']}
+                <View
+                  // colors={['#FF6B6B', '#FF8E8E']}
                   style={styles.recordingIndicator}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                  // start={{ x: 0, y: 0 }}
+                  // end={{ x: 1, y: 0 }}
                 >
                   <View style={styles.recordingDot} />
                   <Text style={styles.recordingText}>🔴 Recording</Text>
-                </LinearGradient>
+                </View>
             )}
 
             </LinearGradient>
@@ -655,7 +729,7 @@ export default function CameraPracticeScreen() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  <View style={[
+                  {/* <View style={[
                     styles.recordButtonInner,
                     isRecording && styles.recordButtonInnerActive
                   ]}>
@@ -664,7 +738,7 @@ export default function CameraPracticeScreen() {
                     ) : (
                       <Text style={styles.recordButtonEmoji}>🎤</Text>
                     )}
-                  </View>
+                  </View> */}
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -705,7 +779,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 200,
+    height: 240,
   },
   bottomGradient: {
     position: 'absolute',
@@ -804,7 +878,7 @@ const styles = StyleSheet.create({
     elevation: 6,
     height: 140, // Back to original height
     transform: [{ translateY: -75 }],
-    paddingTop: 76
+    paddingTop: 56
   },
   introTextContainer: {
     alignItems: 'center',

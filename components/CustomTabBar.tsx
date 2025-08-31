@@ -226,7 +226,7 @@ function TabItem({ route, descriptor, navigation, isFocused, colors, tabWidth }:
         style={[
           styles.tabLabel,
           {
-            color: isFocused ? colors.tint : colors.text + '70',
+            color: isFocused ? colors.tint : colors.tabIconDefault,
             fontWeight: isFocused ? '600' : '500',
           },
         ]}

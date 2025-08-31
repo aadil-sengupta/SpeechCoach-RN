@@ -32,11 +32,10 @@ export default function RootLayout() {
               animation: 'slide_from_bottom',
             }} 
           />
-          <Stack.Screen 
-            name="self-analysis" 
+                    <Stack.Screen 
+            name="analysis" 
             options={{ 
-              presentation: 'modal',
-              animation: 'slide_from_right',
+              headerShown: false,
             }} 
           />
           <Stack.Screen name="+not-found" />
