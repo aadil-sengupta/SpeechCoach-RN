@@ -1,5 +1,4 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { RecordingMetadata, getRecordingMetadata, updateRecordingObservations } from '@/utils/recordingUtils';
 import { AVPlaybackStatus, ResizeMode, Video } from 'expo-av';
@@ -22,6 +21,7 @@ import {
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 
+
 const { width, height } = Dimensions.get('window');
 
 type FocusMode = 'both' | 'audio' | 'video';
@@ -41,7 +41,12 @@ export default function SelfAnalysisScreen() {
   const videoRef = useRef<Video>(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  //const colors = Colors[colorScheme ?? 'light'];
+  let colors = {
+    text: '#222222',
+    background: '#FFFFFF',
+    tint: '#F0E68C',
+  };
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

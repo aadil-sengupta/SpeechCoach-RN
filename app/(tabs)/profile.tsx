@@ -10,6 +10,7 @@ import React, { useCallback, useState } from 'react';
 import {
   Alert,
   Dimensions,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -150,8 +151,8 @@ export default function ProfileScreen() {
 
   const showAppInfo = () => {
     Alert.alert(
-      'About SpeechCoach',
-      'SpeechCoach helps you practice your speaking skills through video recording and analysis.\n\nVersion: 1.0.0\nBuild: Development',
+      'About SpotLight',
+      'SpotLight helps you practice your speaking skills through video recording and analysis.\n\nVersion: 1.0.0\nBuild: Development',
       [{ text: 'OK' }]
     );
   };
@@ -160,6 +161,15 @@ export default function ProfileScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
+          {/* SpotLight Header */}
+          <View style={styles.spotlightHeader}>
+            <Image 
+              source={require('@/assets/SpotLightText.png')} 
+              style={styles.spotlightTextLogo}
+              resizeMode="contain"
+            />
+          </View>
+          
           {/* Clean Header Section */}
           <View style={styles.headerSection}>
             <Animatable.View 
@@ -180,9 +190,9 @@ export default function ProfileScreen() {
               animation="fadeInUp" 
               duration={800}
               delay={300}
-              style={[styles.title, { color: colors.text }]}
+              style={[styles.title, { color: '#000' }]}
             >
-              {user?.name || 'User'} ✨
+              {user?.name || 'User'} 💼
             </Animatable.Text>
             <Animatable.Text 
               animation="fadeInUp" 
@@ -544,5 +554,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
     marginLeft: 12,
+  },
+  // SpotLight Header Styles
+  spotlightHeader: {
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingTop: 4,
+  },
+  spotlightTextLogo: {
+    width: 140,
+    height: 35,
   },
 });

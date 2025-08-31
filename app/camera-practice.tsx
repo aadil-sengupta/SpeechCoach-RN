@@ -245,7 +245,7 @@ export default function CameraPracticeScreen() {
       // Create a permanent file name and unique ID
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const recordingId = generateRecordingId();
-      const fileName = `SpeechCoach_Practice_${timestamp}.mp4`;
+      const fileName = `SpotLight_Practice_${timestamp}.mp4`;
       const documentDirectory = FileSystem.documentDirectory;
       const localUri = `${documentDirectory}${fileName}`;
       
@@ -296,7 +296,7 @@ export default function CameraPracticeScreen() {
         try {
           // Save to device's photo library
           const asset = await MediaLibrary.createAssetAsync(localUri);
-          await MediaLibrary.createAlbumAsync('SpeechCoach', asset, false);
+          await MediaLibrary.createAlbumAsync('SpotLight', asset, false);
           
           // Update metadata with photo library URI
           metadata.photoLibraryUri = asset.uri;

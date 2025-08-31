@@ -178,24 +178,34 @@ export default function DashboardScreen() {
       >
         {/* Clean Header */}
         <View style={styles.headerSection}>
+                      <View style={styles.spotlightHeader}>
+              <Image 
+                source={require('@/assets/SpotLightText.png')} 
+                style={styles.spotlightTextLogo}
+                resizeMode="contain"
+              />
+            </View>
+
           <Animatable.View 
             animation="fadeInDown" 
             duration={800}
             style={styles.headerContent}
           >
+            {/* SpotLight Logo and Text */}
+            
             <View style={styles.welcomeSection}>
-              <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>
+              <Text style={[styles.welcomeText, { color: '#2f2f2fff' }]}>
                 Welcome back! 👋
               </Text>
-              <Text style={[styles.userName, { color: colors.text }]}>
+              <Text style={[styles.userName, { color: '#000' }]}>
                 {user?.name || 'Speaker'}
               </Text>
-              <Text style={[styles.motivationText, { color: colors.textSecondary }]}>
+              <Text style={[styles.motivationText, { color: '#2f2f2fff' }]}>
                 Ready to practice your speaking skills? 🎯
               </Text>
             </View>
             
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[styles.refreshButton, { backgroundColor: colors.tint }]}
               onPress={() => {
                 const loadRecordings = async () => {
@@ -214,7 +224,7 @@ export default function DashboardScreen() {
               }}
             >
               <IconSymbol name="arrow.clockwise" size={20} color="white" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </Animatable.View>
         </View>
         
@@ -255,7 +265,7 @@ export default function DashboardScreen() {
               </View>
               <View style={styles.statItem}>
                 <LinearGradient
-                  colors={[colors.secondary, colors.tertiary]}
+                  colors={[colors.accentGradientStart, colors.accentGradientEnd]}
                   style={styles.statNumberContainer}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -733,6 +743,7 @@ const styles = StyleSheet.create({
   },
   welcomeSection: {
     flex: 1,
+    marginBottom: -40,
   },
   welcomeText: {
     fontSize: 16,
@@ -745,7 +756,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   motivationText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '400',
+    marginTop: 4,
+  },
+  // SpotLight Header Styles
+  spotlightHeader: {
+    alignItems: 'center',
+    marginBottom: 8,
+    marginTop: -28,
+  },
+  spotlightTextLogo: {
+    width: 140,
+    height: 35,
+    marginTop: -20,
+    marginBottom: 25,
   },
 });

@@ -1,12 +1,12 @@
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
   Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -67,20 +67,19 @@ export default function LoginScreen() {
               style={styles.header}
             >
               <View style={styles.logoContainer}>
-                <LinearGradient
-                  colors={[colors.accentGradientStart, colors.accentGradientEnd]}
-                  style={styles.logoBackground}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Text style={styles.logoEmoji}>🎤</Text>
-                </LinearGradient>
+                <Image 
+                  source={require('@/assets/SpotLightLogo.png')} 
+                  style={styles.spotlightLogo}
+                  resizeMode="contain"
+                />
               </View>
-              <Text style={[styles.title, { color: colors.text }]}>
-                Speech Coach
-              </Text>
+              <Image 
+                source={require('@/assets/SpotLightText.png')} 
+                style={styles.spotlightText}
+                resizeMode="contain"
+              />
               <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                ✨ Transform your speaking skills ✨
+                ⚡ Transform your speaking skills ⚡
               </Text>
             </Animatable.View>
 
@@ -128,16 +127,13 @@ export default function LoginScreen() {
                   disabled={isLoading}
                   activeOpacity={0.8}
                 >
-                  <LinearGradient
-                    colors={[colors.gradientStart, colors.gradientEnd]}
-                    style={styles.loginButton}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
+                  <View
+                    style={[styles.loginButton, { backgroundColor: colors.gradientStart }]}
                   >
                     <Text style={styles.loginButtonText}>
-                      {isLoading ? '🚀 Signing In...' : '🎯 Sign In'}
+                      {isLoading ? '⚡ Signing In...' : '🎯 Sign In'}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -146,10 +142,10 @@ export default function LoginScreen() {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.signupText, { color: colors.textSecondary }]}>
-                    New to Speech Coach? 
+                    New to SpotLight? 
                   </Text>
                   <Text style={[styles.signupLinkText, { color: colors.tint }]}>
-                    Join the fun! 🎉
+                    Get Started 💼
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -308,5 +304,15 @@ const styles = StyleSheet.create({
   signupLinkText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // SpotLight Logo Styles
+  spotlightLogo: {
+    width: 60,
+    height: 60,
+  },
+  spotlightText: {
+    width: 180,
+    height: 45,
+    marginTop: 4,
   },
 });

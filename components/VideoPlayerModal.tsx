@@ -7,14 +7,14 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    Dimensions,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -93,7 +93,7 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={[styles.container, { backgroundColor: 'black' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: 'white' }]}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -170,7 +170,7 @@ export default function VideoPlayerModal({ visible, recording, onClose }: VideoP
 
         {/* Video Information */}
         <ScrollView style={styles.infoContainer} showsVerticalScrollIndicator={false}>
-          <BlurView intensity={80} tint="dark" style={styles.infoBlur}>
+          <BlurView intensity={80} tint="light" style={styles.infoBlur}>
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Session Details</Text>
               
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   videoContainer: {
     position: 'relative',
     height: height * 0.4,
-    backgroundColor: 'black',
+    backgroundColor: 'white',
   },
   video: {
     flex: 1,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(241, 241, 241, 0.3)',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   infoTitle: {
-    color: 'white',
+    color: 'black',
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
@@ -376,19 +376,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   infoLabel: {
-    color: 'white',
+    color: 'black',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
     opacity: 0.8,
   },
   infoValue: {
-    color: 'white',
+    color: 'black',
     fontSize: 16,
     lineHeight: 24,
   },
   infoSubValue: {
-    color: 'white',
+    color: 'black',
     fontSize: 12,
     opacity: 0.6,
     marginTop: 4,
@@ -402,19 +402,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailLabel: {
-    color: 'white',
+    color: 'black',
     fontSize: 12,
     fontWeight: '500',
     opacity: 0.7,
     marginBottom: 2,
   },
   detailValue: {
-    color: 'white',
+    color: 'black',
     fontSize: 14,
     fontWeight: '500',
   },
   observationsContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(239, 239, 239, 0.1)',
     borderRadius: 8,
     padding: 12,
     marginTop: 8,
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(159, 159, 159, 0.1)',
   },
   selfAnalysisButton: {
     flexDirection: 'row',
@@ -442,12 +442,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   selfAnalysisButtonText: {
-    color: 'black',
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
   selfAnalysisDescription: {
-    color: 'white',
+    color: 'black',
     fontSize: 13,
     opacity: 0.7,
     textAlign: 'center',

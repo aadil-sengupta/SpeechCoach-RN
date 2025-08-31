@@ -1,4 +1,3 @@
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -6,12 +5,12 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -51,8 +50,8 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
       <Animated.View style={[styles.floatingContainer]}>
         {/* Backdrop blur */}
         <BlurView
-          intensity={colorScheme === 'dark' ? 80 : 100}
-          tint={colorScheme === 'dark' ? 'systemThinMaterialDark' : 'systemThinMaterialLight'}
+          intensity={colorScheme === 'light' ? 80 : 95}
+          tint={colorScheme === 'light' ? 'systemThinMaterialDark' : 'systemUltraThinMaterialLight'}
           style={StyleSheet.absoluteFillObject}
         />
         
@@ -60,7 +59,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         <LinearGradient
           colors={colorScheme === 'dark' 
             ? ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']
-            : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']
+            : [colors.tabBarBackground || 'rgba(255,255,255,0.95)', colors.tabBarBackgroundSecondary || 'rgba(250,251,252,0.9)']
           }
           style={StyleSheet.absoluteFillObject}
         />
@@ -85,7 +84,15 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
           <Animated.View style={[{ transform: [{ scale: practiceButtonScale }] }]}>
             <View style={styles.practiceButtonWrapper}>
               {/* Glowing ring effect */}
-              <View style={styles.practiceButtonGlow} />
+              <View style={[
+                styles.practiceButtonGlow,
+                {
+                  borderColor: colorScheme === 'dark' 
+                    ? 'rgba(240,230,140,0.3)' 
+                    : `${colors.practiceGlow || '#F0E68C'}40`,
+                  shadowColor: colors.practiceGlow || '#F0E68C',
+                }
+              ]} />
               
               <TouchableOpacity
                 style={styles.practiceButton}
@@ -93,11 +100,10 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={[
-                    '#FFFFFF',
-                    '#F8F8F8',
-                    '#F0F0F0'
-                  ]}
+                  colors={colorScheme === 'dark' 
+                    ? [colors.practiceGradientStart || '#334155', colors.practiceGradientEnd || '#334155']
+                    : [colors.practiceGradientStart || '#FFFFFF', colors.practiceGradientEnd || '#FFFFFF']
+                  }
                   style={styles.practiceGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -112,7 +118,11 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                   
                   <View style={styles.practiceInner}>
                     <View style={styles.practiceIconContainer}>
-                      <IconSymbol name="mic.fill" size={26} color="black" />
+                      <Image
+                      source={require('@/assets/SpotLightLogo.png')}
+                      style={{ width: 26, height: 26 }}
+                      resizeMode="contain"
+                      />
                     </View>
                   </View>
                 </LinearGradient>
@@ -196,7 +206,7 @@ function TabItem({ route, descriptor, navigation, isFocused, colors, tabWidth }:
       {/* Active background */}
       <Animated.View style={[styles.activeBackground, animatedBackgroundStyle]}>
         <LinearGradient
-          colors={[`${colors.tint}20`, `${colors.tint}10`]}
+          colors={[`${colors.tint}15`, `${colors.accent}20`]}
           style={StyleSheet.absoluteFillObject}
         />
       </Animated.View>
@@ -206,7 +216,7 @@ function TabItem({ route, descriptor, navigation, isFocused, colors, tabWidth }:
         {options.tabBarIcon &&
           options.tabBarIcon({
             focused: isFocused,
-            color: isFocused ? colors.tint : colors.text + '80',
+            color: isFocused ? colors.tint : colors.tabIconDefault,
             size: 22,
           })}
       </Animated.View>
@@ -216,7 +226,7 @@ function TabItem({ route, descriptor, navigation, isFocused, colors, tabWidth }:
         style={[
           styles.tabLabel,
           {
-            color: isFocused ? colors.tint : colors.text + '60',
+            color: isFocused ? colors.tint : colors.text + '70',
             fontWeight: isFocused ? '600' : '500',
           },
         ]}
@@ -240,13 +250,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 28,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 20,
+    shadowColor: '#F0E68C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 16,
     width: '100%',
     maxWidth: 400,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
   tabRow: {
     flexDirection: 'row',
@@ -301,11 +313,9 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.2)',
-    shadowColor: '#fff',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
     elevation: 8,
   },
   practiceButton: {
@@ -313,13 +323,13 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 16,
+    shadowColor: '#F0E68C',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 12,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   practiceGradient: {
     flex: 1,

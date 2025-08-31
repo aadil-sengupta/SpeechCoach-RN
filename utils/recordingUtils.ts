@@ -22,7 +22,7 @@ export interface RecordingMetadata {
 }
 
 // Constants for AsyncStorage
-export const RECORDINGS_STORAGE_KEY = 'speechcoach_recordings';
+export const RECORDINGS_STORAGE_KEY = 'spotlight_recordings';
 
 // Helper functions for managing recording metadata
 export const saveRecordingMetadata = async (metadata: RecordingMetadata): Promise<void> => {
