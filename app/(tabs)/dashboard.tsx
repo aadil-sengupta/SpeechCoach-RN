@@ -5,19 +5,21 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { RecordingMetadata, formatDuration, getRecordingMetadata } from '@/utils/recordingUtils';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 
 export default function DashboardScreen() {
   const { user } = useAuth();
@@ -72,9 +74,9 @@ export default function DashboardScreen() {
   const renderRecordingItem = ({ item, index }: { item: RecordingMetadata; index: number }) => (
     <TouchableOpacity
       style={[styles.recordingItem, { 
-        backgroundColor: colors.background,
-        borderColor: colors.tint + '20',
-        shadowColor: colors.text + '20',
+        backgroundColor: '#FFFFFF',
+        borderColor: '#E5E7EB',
+        shadowColor: '#000000',
       }]}
       onPress={() => handleRecordingPress(item)}
       activeOpacity={0.8}
@@ -105,7 +107,7 @@ export default function DashboardScreen() {
             </View>
           )} */}
           {/* Session number badge */}
-          <View style={[styles.sessionBadge, { backgroundColor: colors.background }]}>
+          <View style={[styles.sessionBadge, { backgroundColor: '#FFFFFF' }]}>
             <Text style={[styles.sessionNumber, { color: colors.tint }]}>#{index + 1}</Text>
           </View>
         </View>
@@ -113,14 +115,14 @@ export default function DashboardScreen() {
         {/* Enhanced Content */}
         <View style={styles.recordingDetails}>
           <View style={styles.recordingMain}>
-            <Text style={[styles.sessionTitle, { color: colors.text }]}>
+            <Text style={[styles.sessionTitle, { color: '#1F2937' }]}>
               Practice Session #{index + 1}
             </Text>
             <View style={styles.dateTimeRow}>
-              <Text style={[styles.recordingDate, { color: colors.text }]}>
+              <Text style={[styles.recordingDate, { color: '#374151' }]}>
                 {item.recordedDate}
               </Text>
-              <Text style={[styles.recordingTime, { color: colors.text + '70' }]}>
+              <Text style={[styles.recordingTime, { color: '#6B7280' }]}>
                 {new Date(item.createdAt).toLocaleTimeString([], { 
                   hour: '2-digit', 
                   minute: '2-digit',
@@ -134,22 +136,22 @@ export default function DashboardScreen() {
             <View style={styles.recordingMeta}>
               {item.duration && (
                 <View style={styles.metaItem}>
-                  <IconSymbol name="clock" size={12} color={colors.text + '60'} />
-                  <Text style={[styles.metaText, { color: colors.text + '60' }]}>
+                  <IconSymbol name="clock" size={12} color="#9CA3AF" />
+                  <Text style={[styles.metaText, { color: '#9CA3AF' }]}>
                     {formatDuration(item.duration)}
                   </Text>
                 </View>
               )}
               {item.fileSize && (
                 <View style={styles.metaItem}>
-                  <IconSymbol name="doc" size={12} color={colors.text + '60'} />
-                  <Text style={[styles.metaText, { color: colors.text + '60' }]}>
+                  <IconSymbol name="doc" size={12} color="#9CA3AF" />
+                  <Text style={[styles.metaText, { color: '#9CA3AF' }]}>
                     {(item.fileSize / 1024 / 1024).toFixed(1)} MB
                   </Text>
                 </View>
               )}
             </View>
-            <IconSymbol name="chevron.right" size={16} color={colors.text + '40'} />
+            <IconSymbol name="chevron.right" size={16} color="#D1D5DB" />
           </View>
         </View>
       </View>
@@ -158,71 +160,115 @@ export default function DashboardScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.tint} />
-          <Text style={[styles.loadingText, { color: colors.text }]}>Loading your recordings...</Text>
+          <Text style={[styles.loadingText, { color: '#374151' }]}>Loading your recordings...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
       <ScrollView 
         style={styles.content}
         showsVerticalScrollIndicator={false}
         bounces={true}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Welcome back, {user?.name}!
-          </Text>
-          <TouchableOpacity
-            style={[styles.refreshButton, { backgroundColor: colors.tint + '15' }]}
-            onPress={() => {
-              const loadRecordings = async () => {
-                setLoading(true);
-                try {
-                  const recordingData = await getRecordingMetadata();
-                  const sortedRecordings = recordingData.sort(
-                    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                  );
-                  setRecordings(sortedRecordings);
-                } finally {
-                  setLoading(false);
-                }
-              };
-              loadRecordings();
-            }}
+        {/* Clean Header */}
+        <View style={styles.headerSection}>
+          <Animatable.View 
+            animation="fadeInDown" 
+            duration={800}
+            style={styles.headerContent}
           >
-            <IconSymbol name="arrow.clockwise" size={20} color={colors.tint} />
-          </TouchableOpacity>
+            <View style={styles.welcomeSection}>
+              <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>
+                Welcome back! 👋
+              </Text>
+              <Text style={[styles.userName, { color: colors.text }]}>
+                {user?.name || 'Speaker'}
+              </Text>
+              <Text style={[styles.motivationText, { color: colors.textSecondary }]}>
+                Ready to practice your speaking skills? 🎯
+              </Text>
+            </View>
+            
+            <TouchableOpacity
+              style={[styles.refreshButton, { backgroundColor: colors.tint }]}
+              onPress={() => {
+                const loadRecordings = async () => {
+                  setLoading(true);
+                  try {
+                    const recordingData = await getRecordingMetadata();
+                    const sortedRecordings = recordingData.sort(
+                      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    );
+                    setRecordings(sortedRecordings);
+                  } finally {
+                    setLoading(false);
+                  }
+                };
+                loadRecordings();
+              }}
+            >
+              <IconSymbol name="arrow.clockwise" size={20} color="white" />
+            </TouchableOpacity>
+          </Animatable.View>
         </View>
         
-        {/* Statistics Section */}
-        <View style={[styles.statsContainer, { backgroundColor: colors.tint + '15' }]}>
-          <Text style={[styles.statsTitle, { color: colors.text }]}>Your Practice Stats</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.tint }]}>{totalRecordings}</Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>Total Sessions</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.tint }]}>
-                {formatDuration(totalDuration)}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>Total Duration</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.tint }]}>
-                {formatDuration(Math.round(averageDuration))}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>Avg Duration</Text>
+        {/* Clean Statistics Section */}
+        <Animatable.View 
+          animation="fadeInLeft" 
+          duration={800}
+          delay={200}
+        >
+          <View style={[styles.statsContainer, { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F3F4F6' }]}>
+            <Text style={[styles.statsTitle, { color: '#111827' }]}>
+              🏆 Your Practice Stats
+            </Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <LinearGradient
+                  colors={[colors.accentGradientStart, colors.accentGradientEnd]}
+                  style={styles.statNumberContainer}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.statNumber}>{totalRecordings}</Text>
+                </LinearGradient>
+                <Text style={[styles.statLabel, { color: '#374151' }]}>Total Sessions</Text>
+              </View>
+              <View style={styles.statItem}>
+                <LinearGradient
+                  colors={[colors.gradientStart, colors.gradientEnd]}
+                  style={styles.statNumberContainer}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.statNumber}>
+                    {formatDuration(totalDuration)}
+                  </Text>
+                </LinearGradient>
+                <Text style={[styles.statLabel, { color: '#374151' }]}>Total Duration</Text>
+              </View>
+              <View style={styles.statItem}>
+                <LinearGradient
+                  colors={[colors.secondary, colors.tertiary]}
+                  style={styles.statNumberContainer}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.statNumber}>
+                    {formatDuration(Math.round(averageDuration))}
+                  </Text>
+                </LinearGradient>
+                <Text style={[styles.statLabel, { color: '#374151' }]}>Avg Duration</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </Animatable.View>
 
 
         {/* <View style={[styles.aiInsightsBanner, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
@@ -240,7 +286,7 @@ export default function DashboardScreen() {
         {/* Recent Recordings Section */}
         {totalRecordings > 0 ? (
           <View style={styles.recordingsSection}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            <Text style={[styles.sectionTitle, { color: '#111827' }]}>
               Recent Practice Sessions ({totalRecordings} total)
             </Text>
             <FlatList
@@ -265,24 +311,41 @@ export default function DashboardScreen() {
             )}
           </View>
         ) : (
-          <View style={styles.emptyState}>
-            <View style={[styles.emptyIconContainer, { backgroundColor: colors.tint + '15' }]}>
-              <IconSymbol name="mic.fill" size={48} color={colors.tint} />
-            </View>
-            <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-              Ready to start practicing?
-            </Text>
-            <Text style={[styles.emptyStateText, { color: colors.text + '70' }]}>
-              Your practice sessions will appear here after you complete your first recording.
-            </Text>
-            <TouchableOpacity 
-              style={[styles.startPracticeButton, { backgroundColor: colors.tint }]}
-              onPress={() => router.push('/camera-practice')}
+          <Animatable.View 
+            animation="fadeInUp" 
+            duration={800}
+            style={styles.emptyState}
+          >
+            <LinearGradient
+              colors={[colors.accentGradientStart, colors.accentGradientEnd]}
+              style={styles.emptyIconContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
-              <IconSymbol name="video.fill" size={20} color="black" />
-              <Text style={styles.startPracticeText}>Start Your First Session</Text>
+              <Text style={styles.emptyStateEmoji}>🎤</Text>
+            </LinearGradient>
+            <Text style={[styles.emptyStateTitle, { color: '#111827' }]}>
+              Ready to start practicing? 🌟
+            </Text>
+            <Text style={[styles.emptyStateText, { color: '#6B7280' }]}>
+              Your practice sessions will appear here after you complete your first recording. Let's begin your speaking journey!
+            </Text>
+            
+            <TouchableOpacity 
+              onPress={() => router.push('/camera-practice')}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={[colors.gradientStart, colors.gradientEnd]}
+                style={styles.startPracticeButton}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.startPracticeEmoji}>🎯</Text>
+                <Text style={styles.startPracticeText}>Start Your First Session</Text>
+              </LinearGradient>
             </TouchableOpacity>
-          </View>
+          </Animatable.View>
         )}
       </ScrollView>
 
@@ -305,6 +368,16 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 20,
   },
+  headerSection: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    marginTop: 0,
+    marginBottom: 24,
+    marginHorizontal: -20,
+    backgroundColor: '#FFFFFF',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -317,9 +390,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   refreshButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -337,6 +410,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   statsTitle: {
     fontSize: 18,
@@ -351,10 +432,29 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
   },
+  statNumberContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginBottom: 8,
+    minWidth: 60,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   statLabel: {
     fontSize: 12,
@@ -373,18 +473,19 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   recordingItem: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 0,
     marginBottom: 16,
-    borderWidth: 1,
     overflow: 'hidden',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
+    borderWidth: 1,
   },
   recordingContent: {
     flexDirection: 'row',
@@ -530,18 +631,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    gap: 20,
+    gap: 24,
   },
   emptyIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  emptyStateEmoji: {
+    fontSize: 48,
+    textAlign: 'center',
   },
   emptyStateTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     textAlign: 'center',
   },
@@ -555,22 +668,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 16,
-    gap: 8,
+    paddingHorizontal: 28,
+    paddingVertical: 18,
+    borderRadius: 20,
+    gap: 12,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 6,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  startPracticeEmoji: {
+    fontSize: 20,
   },
   startPracticeText: {
-    color: 'black',
-    fontSize: 16,
-    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   aiInsightsBanner: {
     padding: 16,
@@ -594,5 +714,38 @@ const styles = StyleSheet.create({
   bannerDescription: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  // New colorful header styles
+  headerGradient: {
+    marginHorizontal: -20,
+    marginTop: -20,
+    marginBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  welcomeSection: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  userName: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  motivationText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

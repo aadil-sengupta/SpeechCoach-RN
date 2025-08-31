@@ -7,19 +7,20 @@ import { BlurView } from 'expo-blur';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Dimensions,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 
 const { width, height } = Dimensions.get('window');
 
@@ -191,7 +192,7 @@ export default function SelfAnalysisScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: colors.text }]}>Loading recording...</Text>
         </View>
@@ -201,7 +202,7 @@ export default function SelfAnalysisScreen() {
 
   if (!recording) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
         <View style={styles.errorContainer}>
           <IconSymbol name="exclamationmark.triangle" size={48} color={colors.text} />
           <Text style={[styles.errorText, { color: colors.text }]}>Recording not found</Text>
@@ -211,18 +212,27 @@ export default function SelfAnalysisScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.text + '20' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+      {/* Clean Header */}
+      <View style={[styles.header, { backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <IconSymbol name="chevron.left" size={24} color={colors.text} />
-          <Text style={[styles.backText, { color: colors.text }]}>Back</Text>
+          <View style={styles.backButtonContainer}>
+            <Text style={styles.backButtonEmoji}>👈</Text>
+            <Text style={[styles.backText, { color: colors.text }]}>Back</Text>
+          </View>
         </TouchableOpacity>
         
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Self-Analysis</Text>
+        <Animatable.View 
+          animation="fadeInDown" 
+          duration={800}
+          style={styles.headerTitleContainer}
+        >
+          <Text style={styles.headerEmoji}>🎬</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Self-Analysis</Text>
+        </Animatable.View>
         
         <View style={styles.placeholder} />
       </View>
@@ -791,21 +801,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
+    paddingVertical: 20,
+    borderBottomWidth: 0,
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    zIndex: 1,
   },
   backText: {
     fontSize: 16,
     fontWeight: '500',
+    color: 'white',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   placeholder: {
     width: 60,
@@ -1220,5 +1233,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontStyle: 'italic',
+  },
+  // New colorful styles
+  backButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  backButtonEmoji: {
+    fontSize: 16,
+    marginRight: 4,
+  },
+  headerTitleContainer: {
+    alignItems: 'center',
+  },
+  headerEmoji: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  controlsTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  controlsEmoji: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  segmentEmoji: {
+    fontSize: 16,
+    marginRight: 6,
   },
 });

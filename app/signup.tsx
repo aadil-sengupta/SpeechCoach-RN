@@ -1,19 +1,24 @@
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import * as Animatable from 'react-native-animatable';
+
+const { width, height } = Dimensions.get('window');
 
 export default function SignupScreen() {
   const [name, setName] = useState('');
@@ -58,108 +63,150 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-      >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Create Account
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.text }]}>
-              Join Speech Coach today
-            </Text>
-          </View>
+    <View style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          {/* Removed floating decorative elements for clean design */}
 
-          <View style={styles.form}>
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.tint,
-              }]}
-              placeholder="Full Name"
-              placeholderTextColor={colors.text + '80'}
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-            />
-
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.tint,
-              }]}
-              placeholder="Email"
-              placeholderTextColor={colors.text + '80'}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.tint,
-              }]}
-              placeholder="Password"
-              placeholderTextColor={colors.text + '80'}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.tint,
-              }]}
-              placeholder="Confirm Password"
-              placeholderTextColor={colors.text + '80'}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-
-            <TouchableOpacity
-              style={[styles.signupButton, { backgroundColor: colors.tint }]}
-              onPress={handleSignup}
-              disabled={isLoading}
+          <View style={styles.content}>
+            {/* Header with animation */}
+            <Animatable.View 
+              animation="fadeInDown" 
+              duration={1000}
+              style={styles.header}
             >
-              <Text style={styles.signupButtonText}>
-                {isLoading ? 'Creating Account...' : 'Sign Up'}
+              <View style={styles.logoContainer}>
+                <LinearGradient
+                  colors={[colors.accentGradientStart, colors.accentGradientEnd]}
+                  style={styles.logoBackground}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.logoEmoji}>✨</Text>
+                </LinearGradient>
+              </View>
+              <Text style={[styles.title, { color: colors.text }]}>
+                Join Speech Coach
               </Text>
-            </TouchableOpacity>
+              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                🚀 Start your speaking journey today! 🚀
+              </Text>
+            </Animatable.View>
 
-            <TouchableOpacity
-              style={styles.loginLink}
-              onPress={navigateToLogin}
+            {/* Form with animation */}
+            <Animatable.View 
+              animation="fadeInUp" 
+              duration={1000}
+              delay={300}
+              style={[styles.formContainer, { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F3F4F6' }]}
             >
-              <Text style={[styles.loginText, { color: colors.text }]}>
-                Already have an account?{' '}
-                <Text style={[styles.loginLinkText, { color: colors.tint }]}>
-                  Sign In
-                </Text>
-              </Text>
-            </TouchableOpacity>
+              <View style={styles.form}>
+                <View style={[styles.inputContainer, { backgroundColor: '#F9FAFB', borderColor: colors.border }]}>
+                  <View style={styles.inputIconContainer}>
+                    <Text style={styles.inputIcon}>👤</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Your awesome name"
+                    placeholderTextColor={colors.textSecondary}
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                  />
+                </View>
+
+                <View style={[styles.inputContainer, { backgroundColor: '#F9FAFB', borderColor: colors.border }]}>
+                  <View style={styles.inputIconContainer}>
+                    <Text style={styles.inputIcon}>📧</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Your email address"
+                    placeholderTextColor={colors.textSecondary}
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+
+                <View style={[styles.inputContainer, { backgroundColor: '#F9FAFB', borderColor: colors.border }]}>
+                  <View style={styles.inputIconContainer}>
+                    <Text style={styles.inputIcon}>🔒</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Create a password"
+                    placeholderTextColor={colors.textSecondary}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <View style={[styles.inputContainer, { backgroundColor: '#F9FAFB', borderColor: colors.border }]}>
+                  <View style={styles.inputIconContainer}>
+                    <Text style={styles.inputIcon}>✅</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Confirm your password"
+                    placeholderTextColor={colors.textSecondary}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleSignup}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={[colors.gradientStart, colors.gradientEnd]}
+                    style={styles.signupButton}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    <Text style={styles.signupButtonText}>
+                      {isLoading ? '✨ Creating Magic...' : '🎉 Join the Fun!'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.loginLink}
+                  onPress={navigateToLogin}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.loginText, { color: colors.textSecondary }]}>
+                    Already part of the team? 
+                  </Text>
+                  <Text style={[styles.loginLinkText, { color: colors.tint }]}>
+                    Sign In! 👋
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Animatable.View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   keyboardAvoidingView: {
@@ -168,43 +215,141 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
+    position: 'relative',
   },
+  // Floating decorative elements
+  floatingElement: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+  },
+  star1: {
+    width: 24,
+    height: 24,
+    top: height * 0.12,
+    right: width * 0.15,
+    transform: [{ rotate: '45deg' }],
+  },
+  star2: {
+    width: 18,
+    height: 18,
+    top: height * 0.3,
+    left: width * 0.1,
+    transform: [{ rotate: '20deg' }],
+  },
+  star3: {
+    width: 20,
+    height: 20,
+    bottom: height * 0.25,
+    right: width * 0.25,
+    transform: [{ rotate: '70deg' }],
+  },
+  // Header styles
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 32,
+  },
+  logoContainer: {
+    marginBottom: 20,
+  },
+  logoBackground: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  logoEmoji: {
+    fontSize: 36,
+    textAlign: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
-    opacity: 0.7,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+  },
+  // Form styles
+  formContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 24,
+    padding: 24,
+    backdropFilter: 'blur(10px)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 12,
   },
   form: {
     gap: 16,
   },
-  input: {
-    borderWidth: 1.5,
-    borderRadius: 12,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  inputIconContainer: {
+    marginRight: 12,
+  },
+  inputIcon: {
+    fontSize: 20,
+  },
+  input: {
+    flex: 1,
     fontSize: 16,
+    color: 'white',
+    paddingVertical: 16,
+    fontWeight: '500',
   },
   signupButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   signupButtonText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   loginLink: {
     alignItems: 'center',
@@ -212,8 +357,15 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
   },
   loginLinkText: {
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });

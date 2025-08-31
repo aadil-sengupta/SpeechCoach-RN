@@ -8,14 +8,14 @@ import * as FileSystem from 'expo-file-system';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useState } from 'react';
 import {
-  Alert,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 
@@ -157,11 +157,16 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Clean Header Section */}
-          <View style={styles.headerSection}>
+          {/* Enhanced Header Section with Gradient */}
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            style={styles.headerSection}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
             <Animatable.View 
               animation="bounceIn" 
               duration={1000}
@@ -180,7 +185,7 @@ export default function ProfileScreen() {
               animation="fadeInUp" 
               duration={800}
               delay={300}
-              style={[styles.title, { color: colors.text }]}
+              style={styles.title}
             >
               {user?.name || 'User'} ✨
             </Animatable.Text>
@@ -188,23 +193,28 @@ export default function ProfileScreen() {
               animation="fadeInUp" 
               duration={800}
               delay={500}
-              style={[styles.email, { color: colors.textSecondary }]}
+              style={styles.email}
             >
               {user?.email}
             </Animatable.Text>
-          </View>
+          </LinearGradient>
 
-          {/* Clean App Statistics */}
+          {/* Enhanced App Statistics */}
           <Animatable.View 
             animation="fadeInLeft" 
             duration={800}
             delay={600}
             style={styles.section}
           >
-            <Text style={[styles.sectionTitle, { color: '#111827' }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
               🏆 Your Progress
             </Text>
-            <View style={[styles.statsContainer, { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F3F4F6' }]}>
+            <LinearGradient
+              colors={[colors.gradientStart + '20', colors.gradientEnd + '20']}
+              style={styles.statsContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <View style={styles.statItem}>
                 <LinearGradient
                   colors={[colors.accentGradientStart, colors.accentGradientEnd]}
@@ -214,10 +224,10 @@ export default function ProfileScreen() {
                 >
                   <Text style={styles.statEmoji}>🎥</Text>
                 </LinearGradient>
-                <Text style={[styles.statNumber, { color: '#1F2937' }]}>
+                <Text style={[styles.statNumber, { color: colors.text }]}>
                   {appStats.totalRecordings}
                 </Text>
-                <Text style={[styles.statLabel, { color: '#6B7280' }]}>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                   Recordings
                 </Text>
               </View>
@@ -230,10 +240,10 @@ export default function ProfileScreen() {
                 >
                   <Text style={styles.statEmoji}>⏱️</Text>
                 </LinearGradient>
-                <Text style={[styles.statNumber, { color: '#1F2937' }]}>
+                <Text style={[styles.statNumber, { color: colors.text }]}>
                   {Math.round(appStats.totalDuration / 60)}
                 </Text>
-                <Text style={[styles.statLabel, { color: '#6B7280' }]}>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                   Minutes
                 </Text>
               </View>
@@ -246,14 +256,14 @@ export default function ProfileScreen() {
                 >
                   <Text style={styles.statEmoji}>💾</Text>
                 </LinearGradient>
-                <Text style={[styles.statNumber, { color: '#1F2937' }]}>
+                <Text style={[styles.statNumber, { color: colors.text }]}>
                   {(appStats.totalSize / 1024 / 1024).toFixed(1)}
                 </Text>
-                <Text style={[styles.statLabel, { color: '#6B7280' }]}>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                   MB Used
                 </Text>
               </View>
-            </View>
+            </LinearGradient>
           </Animatable.View>
 
           {/* Enhanced Profile Options */}
@@ -263,40 +273,40 @@ export default function ProfileScreen() {
             delay={800}
             style={styles.section}
           >
-            <Text style={[styles.sectionTitle, { color: '#111827' }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
               👤 Account
             </Text>
-            <View style={[styles.optionsContainer, { backgroundColor: '#FFFFFF' }]}>
+            <View style={[styles.optionsContainer, { backgroundColor: colors.cardBackground }]}>
               <TouchableOpacity 
-                style={[styles.optionItem, { borderBottomColor: '#F3F4F6' }]}
+                style={[styles.optionItem, { borderBottomColor: colors.border }]}
                 onPress={handleLogout}
               >
                 <LinearGradient
-                  colors={['#DC2626', '#EF4444']}
+                  colors={['#FF6B6B', '#FF8E8E']}
                   style={styles.optionIconContainer}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
                   <Text style={styles.optionEmoji}>🚪</Text>
                 </LinearGradient>
-                <Text style={[styles.optionText, { color: '#374151' }]}>Sign Out</Text>
-                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                <Text style={[styles.optionText, { color: colors.text }]}>Sign Out</Text>
+                <IconSymbol name="chevron.right" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={[styles.optionItem, { borderBottomColor: '#F3F4F6' }]}
+                style={[styles.optionItem, { borderBottomColor: colors.border }]}
                 onPress={handleClearAuthData}
               >
                 <LinearGradient
-                  colors={[colors.secondary, colors.tertiary]}
+                  colors={['#FF9500', '#FFAA00']}
                   style={styles.optionIconContainer}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
                   <Text style={styles.optionEmoji}>🗑️</Text>
                 </LinearGradient>
-                <Text style={[styles.optionText, { color: '#374151' }]}>Clear Auth Data</Text>
-                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                <Text style={[styles.optionText, { color: colors.text }]}>Clear Auth Data</Text>
+                <IconSymbol name="chevron.right" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </Animatable.View>
@@ -308,12 +318,12 @@ export default function ProfileScreen() {
             delay={1000}
             style={styles.section}
           >
-            <Text style={[styles.sectionTitle, { color: '#111827' }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
               📊 Data Management
             </Text>
-            <View style={[styles.optionsContainer, { backgroundColor: '#FFFFFF' }]}>
+            <View style={[styles.optionsContainer, { backgroundColor: colors.cardBackground }]}>
               <TouchableOpacity 
-                style={[styles.optionItem, { borderBottomColor: '#F3F4F6' }]}
+                style={[styles.optionItem, { borderBottomColor: colors.border }]}
                 onPress={handleExportData}
               >
                 <LinearGradient
@@ -324,24 +334,24 @@ export default function ProfileScreen() {
                 >
                   <Text style={styles.optionEmoji}>📤</Text>
                 </LinearGradient>
-                <Text style={[styles.optionText, { color: '#374151' }]}>Export Data</Text>
-                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                <Text style={[styles.optionText, { color: colors.text }]}>Export Data</Text>
+                <IconSymbol name="chevron.right" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={[styles.optionItem, { borderBottomColor: '#F3F4F6' }]}
+                style={[styles.optionItem, { borderBottomColor: colors.border }]}
                 onPress={handleClearCache}
               >
                 <LinearGradient
-                  colors={[colors.accent, colors.tertiary]}
+                  colors={['#FF3B30', '#FF6B6B']}
                   style={styles.optionIconContainer}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
                   <Text style={styles.optionEmoji}>🧹</Text>
                 </LinearGradient>
-                <Text style={[styles.optionText, { color: '#374151' }]}>Clear Cache</Text>
-                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                <Text style={[styles.optionText, { color: colors.text }]}>Clear Cache</Text>
+                <IconSymbol name="chevron.right" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -349,15 +359,15 @@ export default function ProfileScreen() {
                 onPress={handleClearRecordings}
               >
                 <LinearGradient
-                  colors={['#DC2626', '#EF4444']}
+                  colors={['#FF3B30', '#FF4444']}
                   style={styles.optionIconContainer}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
                   <Text style={styles.optionEmoji}>❌</Text>
                 </LinearGradient>
-                <Text style={[styles.optionText, { color: '#374151' }]}>Clear All Recordings</Text>
-                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                <Text style={[styles.optionText, { color: colors.text }]}>Clear All Recordings</Text>
+                <IconSymbol name="chevron.right" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </Animatable.View>
@@ -369,10 +379,10 @@ export default function ProfileScreen() {
             delay={1200}
             style={styles.section}
           >
-            <Text style={[styles.sectionTitle, { color: '#111827' }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
               ℹ️ About
             </Text>
-            <View style={[styles.optionsContainer, { backgroundColor: '#FFFFFF' }]}>
+            <View style={[styles.optionsContainer, { backgroundColor: colors.cardBackground }]}>
               <TouchableOpacity 
                 style={[styles.optionItem, { borderBottomWidth: 0 }]}
                 onPress={showAppInfo}
@@ -385,8 +395,8 @@ export default function ProfileScreen() {
                 >
                   <Text style={styles.optionEmoji}>💬</Text>
                 </LinearGradient>
-                <Text style={[styles.optionText, { color: '#374151' }]}>App Information</Text>
-                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                <Text style={[styles.optionText, { color: colors.text }]}>App Information</Text>
+                <IconSymbol name="chevron.right" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </Animatable.View>
@@ -415,7 +425,6 @@ const styles = StyleSheet.create({
     marginTop: 0,
     marginBottom: 24,
     marginHorizontal: -20,
-    backgroundColor: '#FFFFFF',
   },
   avatarContainer: {
     marginBottom: 16,
@@ -443,9 +452,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   email: {
     fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.85)',
     fontWeight: '500',
   },
   section: {
@@ -461,14 +475,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     padding: 20,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
   },
   statItem: {
     alignItems: 'center',
@@ -504,16 +510,6 @@ const styles = StyleSheet.create({
   optionsContainer: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   optionItem: {
     flexDirection: 'row',

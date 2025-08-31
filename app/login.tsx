@@ -1,19 +1,24 @@
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import * as Animatable from 'react-native-animatable';
+
+const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -46,81 +51,121 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-      >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Speech Coach
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.text }]}>
-              Sign in to continue
-            </Text>
-          </View>
+    <View style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          {/* Removed floating decorative elements for clean design */}
 
-          <View style={styles.form}>
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.tint,
-              }]}
-              placeholder="Email"
-              placeholderTextColor={colors.text + '80'}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.tint,
-              }]}
-              placeholder="Password"
-              placeholderTextColor={colors.text + '80'}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-
-            <TouchableOpacity
-              style={[styles.loginButton, { backgroundColor: colors.tint }]}
-              onPress={handleLogin}
-              disabled={isLoading}
+          <View style={styles.content}>
+            {/* Header with animation */}
+            <Animatable.View 
+              animation="fadeInDown" 
+              duration={1000}
+              style={styles.header}
             >
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+              <View style={styles.logoContainer}>
+                <LinearGradient
+                  colors={[colors.accentGradientStart, colors.accentGradientEnd]}
+                  style={styles.logoBackground}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.logoEmoji}>🎤</Text>
+                </LinearGradient>
+              </View>
+              <Text style={[styles.title, { color: colors.text }]}>
+                Speech Coach
               </Text>
-            </TouchableOpacity>
+              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                ✨ Transform your speaking skills ✨
+              </Text>
+            </Animatable.View>
 
-            <TouchableOpacity
-              style={styles.signupLink}
-              onPress={navigateToSignup}
+            {/* Form with animation */}
+            <Animatable.View 
+              animation="fadeInUp" 
+              duration={1000}
+              delay={300}
+              style={[styles.formContainer, { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F3F4F6' }]}
             >
-              <Text style={[styles.signupText, { color: colors.text }]}>
-                Don't have an account?{' '}
-                <Text style={[styles.signupLinkText, { color: colors.tint }]}>
-                  Sign Up
-                </Text>
-              </Text>
-            </TouchableOpacity>
+              <View style={styles.form}>
+                <View style={[styles.inputContainer, { backgroundColor: '#F9FAFB', borderColor: colors.border }]}>
+                  <View style={styles.inputIconContainer}>
+                    <Text style={styles.inputIcon}>📧</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Enter your email"
+                    placeholderTextColor={colors.textSecondary}
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+
+                <View style={[styles.inputContainer, { backgroundColor: '#F9FAFB', borderColor: colors.border }]}>
+                  <View style={styles.inputIconContainer}>
+                    <Text style={styles.inputIcon}>🔒</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Enter your password"
+                    placeholderTextColor={colors.textSecondary}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={[colors.gradientStart, colors.gradientEnd]}
+                    style={styles.loginButton}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    <Text style={styles.loginButtonText}>
+                      {isLoading ? '🚀 Signing In...' : '🎯 Sign In'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.signupLink}
+                  onPress={navigateToSignup}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.signupText, { color: colors.textSecondary }]}>
+                    New to Speech Coach? 
+                  </Text>
+                  <Text style={[styles.signupLinkText, { color: colors.tint }]}>
+                    Join the fun! 🎉
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Animatable.View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   keyboardAvoidingView: {
@@ -129,43 +174,128 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
+    position: 'relative',
   },
+  // Floating decorative circles
+  floatingCircle: {
+    position: 'absolute',
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  circle1: {
+    width: 80,
+    height: 80,
+    top: height * 0.15,
+    right: width * 0.1,
+  },
+  circle2: {
+    width: 60,
+    height: 60,
+    top: height * 0.25,
+    left: width * 0.05,
+  },
+  circle3: {
+    width: 40,
+    height: 40,
+    bottom: height * 0.2,
+    right: width * 0.2,
+  },
+  // Header styles
   header: {
     alignItems: 'center',
     marginBottom: 48,
   },
+  logoContainer: {
+    marginBottom: 20,
+  },
+  logoBackground: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  logoEmoji: {
+    fontSize: 36,
+    textAlign: 'center',
+  },
   title: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
-    opacity: 0.7,
+    fontWeight: '500',
+  },
+  // Form styles
+  formContainer: {
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
   },
   form: {
-    gap: 16,
+    gap: 20,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    borderWidth: 1,
+  },
+  inputIconContainer: {
+    marginRight: 12,
+  },
+  inputIcon: {
+    fontSize: 20,
   },
   input: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    flex: 1,
     fontSize: 16,
+    paddingVertical: 16,
+    fontWeight: '500',
   },
   loginButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   loginButtonText: {
-    color: 'black',
-    fontSize: 16,
-    fontWeight: '600',
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   signupLink: {
     alignItems: 'center',
@@ -173,8 +303,10 @@ const styles = StyleSheet.create({
   },
   signupText: {
     fontSize: 16,
+    marginBottom: 4,
   },
   signupLinkText: {
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -2,15 +2,15 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import {
-    RecordingMetadata,
-    clearAllRecordingMetadata,
-    exportRecordingMetadata,
-    formatDuration,
-    generateRecordingId,
-    generateVideoThumbnail,
-    getRecordingMetadata,
-    getVideoDuration,
-    saveRecordingMetadata,
+  RecordingMetadata,
+  clearAllRecordingMetadata,
+  exportRecordingMetadata,
+  formatDuration,
+  generateRecordingId,
+  generateVideoThumbnail,
+  getRecordingMetadata,
+  getVideoDuration,
+  saveRecordingMetadata,
 } from '@/utils/recordingUtils';
 import { BlurView } from 'expo-blur';
 import { CameraType, CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -20,15 +20,15 @@ import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Dimensions,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -143,7 +143,7 @@ export default function CameraPracticeScreen() {
 
   if (!permission.granted || !microphonePermission?.granted || mediaLibraryPermission !== 'granted') {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
         <View style={styles.permissionContainer}>
           <IconSymbol name="camera.fill" size={64} color={colors.text} />
           <Text style={[styles.permissionTitle, { color: colors.text }]}>
@@ -587,13 +587,21 @@ export default function CameraPracticeScreen() {
 
         <SafeAreaView style={styles.topControls}>
           <View style={styles.topCenter}>
-            <BlurView intensity={85} tint="dark" style={styles.introTextBlur}>
+            <LinearGradient
+              colors={[colors.gradientStart + '95', colors.gradientEnd + '95']}
+              style={styles.introTextBlur}
+            >
               <TouchableOpacity 
                 onPress={changeText} 
                 style={styles.introTextContainer}
                 activeOpacity={0.8}
               >
                 <Animated.View style={{ opacity: fadeAnim }}>
+                  <View style={styles.introTextHeader}>
+                    <Text style={styles.introTextEmoji}>💭</Text>
+                    <Text style={styles.introTextTitle}>Speaking Prompt</Text>
+                    <Text style={styles.introTextSubtitle}>Tap to change</Text>
+                  </View>
                   <Text style={styles.introText}>
                     {introTexts[currentTextIndex]}
                   </Text>
@@ -601,13 +609,18 @@ export default function CameraPracticeScreen() {
               </TouchableOpacity>
             
             {isRecording && (
-                <View style={styles.recordingIndicator}>
+                <LinearGradient
+                  colors={['#FF6B6B', '#FF8E8E']}
+                  style={styles.recordingIndicator}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
                   <View style={styles.recordingDot} />
-                  <Text style={styles.recordingText}>Recording</Text>
-                </View>
+                  <Text style={styles.recordingText}>🔴 Recording</Text>
+                </LinearGradient>
             )}
 
-            </BlurView>
+            </LinearGradient>
           </View>
         </SafeAreaView>
 
@@ -625,7 +638,7 @@ export default function CameraPracticeScreen() {
                 </BlurView>
               </TouchableOpacity>
 
-              {/* Record Button */}
+              {/* Enhanced Record Button */}
               <TouchableOpacity
                 style={[
                   styles.recordButton,
@@ -633,10 +646,14 @@ export default function CameraPracticeScreen() {
                 ]}
                 onPress={handleRecordPress}
               >
-                <BlurView 
-                  intensity={isRecording ? 80 : 60} 
-                  tint={isRecording ? "light" : "dark"} 
-                  style={styles.recordButtonBlur}
+                <LinearGradient
+                  colors={isRecording 
+                    ? ['#FF6B6B', '#FF8E8E'] 
+                    : [colors.accentGradientStart, colors.accentGradientEnd]
+                  }
+                  style={styles.recordButtonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                 >
                   <View style={[
                     styles.recordButtonInner,
@@ -645,11 +662,10 @@ export default function CameraPracticeScreen() {
                     {isRecording ? (
                       <View style={styles.stopIcon} />
                     ) : (
-                    //   <IconSymbol name="mic.fill" size={32} color="white" />
-                        <></>
+                      <Text style={styles.recordButtonEmoji}>🎤</Text>
                     )}
                   </View>
-                </BlurView>
+                </LinearGradient>
               </TouchableOpacity>
 
               {/* Settings button */}
@@ -960,5 +976,39 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: 'red',
     borderRadius: 4,
+  },
+  // New colorful styles
+  introTextHeader: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  introTextEmoji: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  introTextTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  introTextSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontStyle: 'italic',
+  },
+  recordButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recordButtonEmoji: {
+    fontSize: 32,
+    textAlign: 'center',
   },
 });
